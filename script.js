@@ -20,7 +20,6 @@ textarea.addEventListener('keydown', e => {
 
 // Counting the number of lines in the textarea
 const linesChip = document.querySelector('[lines-chip]');
-const linesChipSymbol = document.querySelector('[lines-chip-symbol]');
 ["mouseup", "keyup"].forEach(e => textarea.addEventListener(e, () => {
     let style = (window.getComputedStyle) ? window.getComputedStyle(textarea) : textarea.currentStyle;
     let taLineHeight = parseInt(style.lineHeight, 10);
@@ -56,5 +55,5 @@ const linesChipSymbol = document.querySelector('[lines-chip-symbol]');
     console.log("taHeight", taHeight);
     let numberOfLines = Math.ceil(taHeight / taLineHeight) - 3;
 
-    linesChip.innerHTML = numberOfLines.toString().concat(" lines"); 
+    linesChip.innerHTML = numberOfLines + " lines"; 
 }));
