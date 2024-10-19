@@ -1,0 +1,161 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap');
+
+/* 
+<uniquifier>: Use a unique and descriptive class name
+<weight>: Use a value from 300 to 700 
+*/
+
+.space-grotesk-normal {
+  font-family: "Space Grotesk", monospace;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+:root {
+    --blue1: #213A57; /* border */
+    --blue2: #112A47; /* text editor bg */
+    --blue3: #011936; /* menu bar */
+    --text1: #8CBCB9; /* selected file title and highlight */
+    --text2: #A4B2B5; /* text editor */
+    --text3: #415A77; /* number sa kilid */
+    --main-font: Product Sans, sans-serif;
+    --editor-font: Space Grotesk;
+}
+body {
+    padding: 0;
+    margin: 0;
+    background-color: var(--blue3);
+    position: relative;
+    height: 100dvh;
+    width: 100dvw;
+    overflow: hidden;
+}
+
+.title-bar {
+    height: 60px;
+    width: 90dvw;
+    border-radius: 50px;
+    margin: 1.5em auto 0 auto;
+    box-shadow: rgba(3, 21, 39, 0.2) 0px 7px 29px 5px;
+    background-color: var(--blue2);
+    position: relative;
+    z-index: 1;
+    font-family: var(--main-font);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    overflow-x: auto;
+}
+
+.left-title, .right-title {
+    height: 100%;
+    width: auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.title-bar button {
+    background-color: var(--blue2);
+    color: var(--text2);
+    font-size: 1em;
+    outline: none;
+    border: none;
+    height: 100%;
+    width: 50px;
+    padding: 0 0.5em 0 0.5em;
+    cursor: pointer;
+    border-radius: 0.5em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.title-bar button:hover {
+    background-color: var(--blue3);
+}
+
+.left-title div {
+    border-right: 2px solid var(--blue1);
+    height: 80%;
+    padding: 0 1em 0 1em;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.left-title div:last-child {
+    border: none;
+}
+
+.right-title div {
+    border-left: 2px solid var(--blue1);
+    height: 80%;
+    padding: 0 1em 0 1em;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.document-name {
+    color: var(--text2);
+    font-style: italic;
+}
+
+.editor {
+    width: 90dvw;
+    margin: 2em auto 0 auto;
+    height: 80dvh;
+    position: relative;
+    bottom: 0;
+}
+
+.editor textarea {
+    height: 100%;
+    width: 100%;
+    font-size: 1em;
+    border-radius: 0.75em;
+    background-color: var(--blue3);
+    border: none;
+    outline: none;
+    text-decoration: none;
+    resize: none;
+    color: var(--text2);
+    padding: 1em;
+    box-sizing: border-box;
+    caret-color: var(--text2);
+    overflow-x: auto;
+}
+
+.editor textarea::placeholder {
+    color: var(--text1);
+    font-style: italic;
+    font-family: var(--editor-font);
+}
+
+footer {
+    position: absolute;
+    bottom: 0;
+    flex-direction: row;
+    display: none;
+}
+
+.lines, .error {
+    font-family: var(--main-font);
+    color: var(--text1);
+    margin: 0 0 1em 1em;
+    padding: 0.5em 1em;
+    border-radius: 10em;
+    opacity: 0.3;
+    background-color: var(--blue2);
+    font-size: 0.75em;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5em;
+}
+
+.lines:hover, .error:hover {
+    opacity: 1;
+}

@@ -1,0 +1,16 @@
+:root {
+    --blue1: #213A57; /* border */
+    --blue2: #112A47; /* text editor bg */
+    --blue3: #011936; /* menu bar */
+    --text1: #8CBCB9; /* selected file title and highlight */
+    --text2: #A4B2B5; /* text editor */
+    --text3: #415A77; /* number sa kilid */
+  }
+
+body {
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

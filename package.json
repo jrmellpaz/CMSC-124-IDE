@@ -1,0 +1,16 @@
+{
+  "name": "stratos",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jermel Lapaz",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "electron": "^33.0.1",
+    "electron-reloader": "^1.2.3"
+  }
+}

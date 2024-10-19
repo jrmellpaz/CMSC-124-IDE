@@ -1,0 +1,64 @@
+const { BrowserWindow, app, ipcMain, dialog } = require("electron");
+const path = require("path");
+const fs = require("fs");
+
+// Electron reloader
+require("electron-reloader")(module);
+
+let mainWindow;
+
+// Main window
+const createWindow = () => {
+    mainWindow = new BrowserWindow({
+        width: 900,
+        height: 700,
+        show: false,
+        autoHideMenuBar: true,
+        webPreferences: {
+            preload: path.join(app.getAppPath(), "renderer.js"),
+        },
+    });
+
+    mainWindow.webContents.openDevTools();
+    mainWindow.loadFile("index.html");
+
+    // Splash screen title window
+    var splash = new BrowserWindow({
+        width: 833,
+        height: 406,
+        frame: false,
+        transparent: true,
+        alwaysOnTop: true,
+        resizable: false,
+    });
+    
+    splash.loadFile("splash.html");
+    splash.center();
+
+    setTimeout(() => {
+        splash.close();
+        mainWindow.center();
+        mainWindow.show();
+    }, 5000);
+};
+
+app.whenReady().then(createWindow);
+
+ipcMain.on("create-document-triggered", () => {
+    dialog.showSaveDialog(mainWindow, {
+        filters: [{
+            name: "text files", extensions: ["txt"]
+        }, {
+            name: "robas files", extensions: ["rbs"]
+        }]
+    }).then(({ filePath }) => {
+        fs.writeFile(filePath, "", (error) => {
+            if(error) {
+                console.log("error", error);
+            }
+            else {
+                mainWindow.webContents.send("document-created", filePath)
+            }
+        })
+    })
+})
