@@ -9,67 +9,70 @@
     <script src="script.js" defer></script>
 </head>
 <body>
-    <nav class="title-bar">
-        <div class="left-title">
-            <div>
-                <button open title="Open an existing file"> 
-                    <img src="assets/open-file.svg" alt="Open an existing file" /> 
-                </button>
-                <button create title="Create a new file"> 
-                    <img src="assets/new-file.svg" alt="New file" /> 
-                </button>
+    <div class="wrapper">
+        <nav class="title-bar">
+            <div class="left-title">
+                <div>
+                    <button open title="Open an existing file"> 
+                        <img src="assets/open-file.svg" alt="Open an existing file" /> 
+                    </button>
+                    <button create title="Create a new file"> 
+                        <img src="assets/new-file.svg" alt="New file" /> 
+                    </button>
+                </div>
+                <div>
+                    <button cut title="Cut"> 
+                        <img src="assets/cut.svg" alt="Cut" /> 
+                    </button>
+                    <button copy title="Copy"> 
+                        <img src="assets/copy.svg" alt="Copy" /> 
+                    </button>
+                    <button paste title="Paste"> 
+                        <img src="assets/paste.svg" alt="Paste" /> 
+                    </button>
+                </div>
+                <div>
+                    <button undo title="Undo changes"> 
+                        <img src="assets/undo.svg" alt="Undo" /> 
+                    </button>
+                    <button redo title="Redo changes"> 
+                        <img src="assets/redo.svg" alt="Redo" /> 
+                    </button>
+                </div>
+                <div>
+                    <span document-name class="document-name">No file selected</span>
+                </div>
             </div>
-            <div>
-                <button cut title="Cut"> 
-                    <img src="assets/cut.svg" alt="Cut" /> 
-                </button>
-                <button copy title="Copy"> 
-                    <img src="assets/copy.svg" alt="Copy" /> 
-                </button>
-                <button paste title="Paste"> 
-                    <img src="assets/paste.svg" alt="Paste" /> 
-                </button>
+            <div class="right-title">
+                <div>
+                    <button save title="Save file"> 
+                        <img src="assets/save.svg" alt="Save" /> 
+                    </button>
+                    <button compile title="Compile file"> 
+                        <img src="assets/compile.svg" alt="Compile" /> 
+                    </button>
+                    <button execute title="Execute file"> 
+                        <img src="assets/execute.svg" alt="Execute" /> 
+                    </button>
+                </div>
             </div>
-            <div>
-                <button undo title="Undo changes"> 
-                    <img src="assets/undo.svg" alt="Undo" /> 
-                </button>
-                <button redo title="Redo changes"> 
-                    <img src="assets/redo.svg" alt="Redo" /> 
-                </button>
-            </div>
-            <div>
-                <span document-name class="document-name">No file selected</span>
-            </div>
-        </div>
-        <div class="right-title">
-            <div>
-                <button save title="Save file"> 
-                    <img src="assets/save.svg" alt="Save" /> 
-                </button>
-                <button compile title="Compile file"> 
-                    <img src="assets/compile.svg" alt="Compile" /> 
-                </button>
-                <button execute title="Execute file"> 
-                    <img src="assets/execute.svg" alt="Execute" /> 
-                </button>
-            </div>
-        </div>
-    </nav>
+        </nav>
+    </div>
     <main class="editor">
-        <textarea fileTextarea disabled 
+        <textarea fileTextarea disabled
+        rows="1"
         placeholder="Open an existing file or create a new one..."
         spellcheck="false" 
         class="space-grotesk-normal" 
         id="textarea"></textarea>
         <footer footer-area>
-            <div errors-chip class="error">
+            <div class="error">
                 <img src="assets/error.svg" alt="Error symbol" />
-                0 error(s)
+                <span errors-chip>0 error(s)</span>
             </div>
-            <div lines-chip class="lines">
+            <div class="lines">
                 <img src="assets/lines.svg" alt="Lines symbol" />
-                0 lines
+                <span lines-chip>0 lines</span>
             </div>
         </footer>
     </main>

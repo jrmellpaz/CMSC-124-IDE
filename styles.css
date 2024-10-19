@@ -1,9 +1,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap');
 
-/* 
-<uniquifier>: Use a unique and descriptive class name
-<weight>: Use a value from 300 to 700 
-*/
+::-webkit-scrollbar {
+    height: 0.25em;
+    width: 0.25em;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--blue2);
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--text1);
+    border-radius: 50px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #83aeab;
+}
 
 .space-grotesk-normal {
   font-family: "Space Grotesk", monospace;
@@ -22,6 +35,7 @@
     --main-font: Product Sans, sans-serif;
     --editor-font: Space Grotesk;
 }
+
 body {
     padding: 0;
     margin: 0;
@@ -32,7 +46,7 @@ body {
     overflow: hidden;
 }
 
-.title-bar {
+.wrapper {
     height: 60px;
     width: 90dvw;
     border-radius: 50px;
@@ -41,6 +55,14 @@ body {
     background-color: var(--blue2);
     position: relative;
     z-index: 1;
+}
+
+.title-bar {
+    height: 100%;
+    margin: 0 30px 0 30px;
+    background-color: var(--blue2);
+    position: relative;
+    z-index: 2; 
     font-family: var(--main-font);
     display: flex;
     align-items: center;
@@ -79,7 +101,7 @@ body {
 .left-title div {
     border-right: 2px solid var(--blue1);
     height: 80%;
-    padding: 0 1em 0 1em;
+    padding: 0 0.5em 0 0.5em;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -92,7 +114,7 @@ body {
 .right-title div {
     border-left: 2px solid var(--blue1);
     height: 80%;
-    padding: 0 1em 0 1em;
+    padding: 0 0.5em 0 0.5em;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -101,12 +123,13 @@ body {
 .document-name {
     color: var(--text2);
     font-style: italic;
+    white-space: nowrap;
 }
 
 .editor {
     width: 90dvw;
     margin: 2em auto 0 auto;
-    height: 80dvh;
+    height: 75dvh;
     position: relative;
     bottom: 0;
 }
@@ -118,27 +141,34 @@ body {
     border-radius: 0.75em;
     background-color: var(--blue3);
     border: none;
+    border-right: 1em solid var(--blue3);
     outline: none;
     text-decoration: none;
     resize: none;
     color: var(--text2);
-    padding: 1em;
+    padding: 1em 1em 2em 1em;
     box-sizing: border-box;
     caret-color: var(--text2);
-    overflow-x: auto;
+    overflow: auto;
+    line-height: 1.1em;
+    white-space: nowrap;
+}
+
+.editor textarea::-webkit-scrollbar-track, .editor textarea::-webkit-scrollbar-corner {
+    background: var(--blue3);
 }
 
 .editor textarea::placeholder {
-    color: var(--text1);
+    color: var(--text2);
     font-style: italic;
     font-family: var(--editor-font);
 }
 
 footer {
     position: absolute;
-    bottom: 0;
     flex-direction: row;
     display: none;
+    padding-top: 0.5em;
 }
 
 .lines, .error {
@@ -147,15 +177,10 @@ footer {
     margin: 0 0 1em 1em;
     padding: 0.5em 1em;
     border-radius: 10em;
-    opacity: 0.3;
     background-color: var(--blue2);
     font-size: 0.75em;
     display: flex;
     flex-direction: row;
     align-items: center;
     gap: 0.5em;
-}
-
-.lines:hover, .error:hover {
-    opacity: 1;
 }
