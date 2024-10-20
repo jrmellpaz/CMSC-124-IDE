@@ -17,8 +17,10 @@ const createWindow = () => {
         webPreferences: {
             preload: path.join(app.getAppPath(), "renderer.js"),
         },
+        icon: "assets/icon.png",
     });
 
+    // mainWindow.setIcon("assets/icon.png");
     mainWindow.webContents.openDevTools();
     mainWindow.loadFile("index.html");
 
@@ -30,6 +32,7 @@ const createWindow = () => {
         transparent: true,
         alwaysOnTop: true,
         resizable: false,
+        icon: "assets/icon.png",
     });
     
     splash.loadFile("splash.html");
