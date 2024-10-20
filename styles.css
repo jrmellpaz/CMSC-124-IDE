@@ -40,29 +40,27 @@ body {
     padding: 0;
     margin: 0;
     background-color: var(--blue3);
-    position: relative;
     height: 100dvh;
     width: 100dvw;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
 }
 
 .wrapper {
-    height: 60px;
+    min-height: 60px;
     width: 90dvw;
     border-radius: 50px;
     margin: 1.5em auto 0 auto;
     box-shadow: rgba(3, 21, 39, 0.2) 0px 7px 29px 5px;
     background-color: var(--blue2);
-    position: relative;
-    z-index: 1;
 }
 
 .title-bar {
     height: 100%;
     margin: 0 30px 0 30px;
     background-color: var(--blue2);
-    position: relative;
-    z-index: 2; 
     font-family: var(--main-font);
     display: flex;
     align-items: center;
@@ -124,6 +122,7 @@ body {
     color: var(--text2);
     font-style: italic;
     white-space: nowrap;
+    margin-left: 0.5em;
 }
 
 .editor {
@@ -169,6 +168,8 @@ footer {
     flex-direction: row;
     display: none;
     padding-top: 0.5em;
+    position: fixed;
+    bottom: 0.5em;
 }
 
 .lines, .error {
@@ -183,4 +184,10 @@ footer {
     flex-direction: row;
     align-items: center;
     gap: 0.5em;
+    opacity: 0.4;
+    cursor: pointer;
+}
+
+.lines:hover, .lines:focus, .lines:active, .error:hover, .error:focus, .error:active {
+    opacity: 1;
 }

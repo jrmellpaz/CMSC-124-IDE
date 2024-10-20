@@ -18,7 +18,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     ipcRenderer.on("document-created", (_, filePath) => {
         elements.title.innerHTML = filePath.replace(/^.*[\\/]/, '');
-        elements.title.style.fontStyle = "none";
+        elements.title.style.fontStyle = "normal";
         elements.fileTextarea.removeAttribute("disabled");
         elements.fileTextarea.placeholder = "Start writing your code...";
         elements.fileTextarea.focus();
