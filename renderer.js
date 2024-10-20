@@ -1,4 +1,5 @@
 const { ipcRenderer, clipboard } = require("electron");
+const UndoRedojs = require("undoredo.js");
 
 window.addEventListener("DOMContentLoaded", () => {
     const elements = {
@@ -8,6 +9,8 @@ window.addEventListener("DOMContentLoaded", () => {
         cut: document.querySelector('[cut]'),
         copy: document.querySelector('[copy]'),
         paste: document.querySelector('[paste]'),
+        undo: document.querySelector('[undo]'),
+        redo: document.querySelector('[redo]'),
         fileTextarea: document.querySelector('[fileTextarea]'),
         footerArea: document.querySelector('[footer-area]'),
         errorsChip: document.querySelector('[errors-chip]'),
@@ -62,5 +65,54 @@ window.addEventListener("DOMContentLoaded", () => {
         elements.fileTextarea.value = newValue;
         elements.fileTextarea.focus();
         elements.fileTextarea.selectionStart = elements.fileTextarea.selectionEnd = selectionEnd - (selectionEnd - selectionStart) + pastedValue.length;
+    });
+
+    // Record changes made in textarea in a stack
+    const editorHistory = new UndoRedojs(5); // 5 seconds delay every record
+
+    elements.fileTextarea.addEventListener("input", () => {
+        if (editorHistory.current() !== elements.fileTextarea.value) {
+            // Force record for pastes and auto corrects
+            if ((elements.fileTextarea.length - editorHistory.current().length) > 1 ||
+            (elements.fileTextarea.value.length - editorHistory.current().length) < -1 ||
+            (elements.fileTextarea.value.length - editorHistory.current().length) === 0) {
+                editorHistory.record(elements.fileTextarea.value, true);
+            }
+            else {
+                editorHistory.record(elements.fileTextarea.value);
+            }
+        }
+    });
+
+    // Undoing changes in textarea
+    const undoChanges = () => {
+        if (editorHistory.undo(true) !== undefined) {
+            elements.fileTextarea.value = editorHistory.undo();
+        }
+    };
+
+    // Clicking the button
+    elements.undo.addEventListener("click", undoChanges);
+    // Pressing Ctrl+Z
+    elements.fileTextarea.addEventListener("keydown", event => {
+        if (event.ctrlKey && event.keyCode === 90) {
+            undoChanges();
+        }
+    });
+
+    // Redoing changes in textarea
+    const redoChanges = () => {
+        if (editorHistory.redo(true) !== undefined) {
+            elements.fileTextarea.value = editorHistory.redo();
+        }
+    };
+
+    // Clicking the button
+    elements.redo.addEventListener("click", redoChanges);
+    // Pressing Ctrl+Y
+    elements.fileTextarea.addEventListener("keydown", event => {
+        if (event.ctrlKey && event.keyCode === 89) {
+            redoChanges();
+        }
     });
 });
