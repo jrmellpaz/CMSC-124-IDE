@@ -149,7 +149,7 @@ body {
     box-sizing: border-box;
     caret-color: var(--text2);
     overflow: auto;
-    line-height: 1.1em;
+    line-height: 1em;
     white-space: nowrap;
 }
 

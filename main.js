@@ -16,6 +16,7 @@ const createWindow = () => {
         autoHideMenuBar: true,
         webPreferences: {
             preload: path.join(app.getAppPath(), "renderer.js"),
+            nodeIntegration: true,
         },
         icon: "assets/icon.png",
     });
