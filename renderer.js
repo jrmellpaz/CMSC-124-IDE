@@ -12,11 +12,17 @@ window.addEventListener("DOMContentLoaded", () => {
         paste: document.querySelector('[paste]'),
         undo: document.querySelector('[undo]'),
         redo: document.querySelector('[redo]'),
+        settings: document.querySelector('[settings]'),
+        saveAs: document.querySelector('[save-as]'),
         save: document.querySelector('[save]'),
         fileTextarea: document.querySelector('[fileTextarea]'),
         footerArea: document.querySelector('[footer-area]'),
         errorsChip: document.querySelector('[errors-chip]'),
         linesChip: document.querySelector('[lines-chip]'),
+        settingsModal: document.querySelector('[settings-modal]'),
+        closeButton: document.querySelector('[settings-close]'),
+    
+        autoSave: document.querySelector('[auto-save-toggle]'),
     };
 
     const handleDocumentChange = (filePath, content = "") => {
@@ -30,9 +36,23 @@ window.addEventListener("DOMContentLoaded", () => {
         elements.footerArea.style.display = "flex";
     };
 
-    //Update File Content
+    // Saving file
+    elements.save.addEventListener("click", () => {
+        ipcRenderer.send("file-content-updated", elements.fileTextarea.value);
+    });
+
+    // Save user data before closing app
+    ipcRenderer.on("save-user-data", () => {
+        window.localStorage.setItem("autoSave") = elements.autoSave.checked;
+
+        ipcRenderer.send("close-app");
+    });
+
+    // Update file content automatically when autosave is enabled in settings
     elements.fileTextarea.addEventListener("input", (e) => {
-        ipcRenderer.send("file-content-updated", e.target.value);
+        if(elements.autoSave.checked) {
+            ipcRenderer.send("file-content-updated", e.target.value);
+        }
     });
 
     // Creating a new file
@@ -53,10 +73,9 @@ window.addEventListener("DOMContentLoaded", () => {
         handleDocumentChange(filePath, content);
     });
 
-
-    //Saving a file
-    elements.save.addEventListener("click", () => {
-        ipcRenderer.send("save-document-triggered"); 
+    // Saving a file as new file
+    elements.saveAs.addEventListener("click", () => {
+        ipcRenderer.send("save-document-triggered", elements.fileTextarea.value);
     });
 
     window.addEventListener("keydown", (e) => {
@@ -147,5 +166,47 @@ window.addEventListener("DOMContentLoaded", () => {
         if (event.ctrlKey && event.keyCode === 89) {
             redoChanges();
         }
+    });
+
+    // Settings modal
+    const closeModal = () => {
+        const modal = elements.settingsModal;
+
+        if(modal.open) {
+            modal.classList.add("closePopup");
+            modal.addEventListener("animationend", () => {
+                modal.classList.remove("closePopup");
+                modal.close();
+            }, {once : true});
+        }
+    };
+
+    // Open up settings modal
+    elements.settings.addEventListener("click", () => {
+        elements.settingsModal.showModal();
+    });
+    // Close down settings modal
+    elements.closeButton.addEventListener("click", closeModal);
+    elements.settingsModal.addEventListener("click", event => {
+        const dimensions = elements.settingsModal.getBoundingClientRect();
+    
+        if(
+            event.clientX < dimensions.left ||
+            event.clientX > dimensions.right ||
+            event.clientY < dimensions.top ||
+            event.clientY > dimensions.bottom
+        ) {
+            elements.settingsModal.classList.add("closePopup");
+      
+            elements.settingsModal.addEventListener("animationend", () => {
+                elements.settingsModal.classList.remove("closePopup");
+                elements.settingsModal.close();
+            }, {once: true});
+        }
+    });
+    // Settings items
+    elements.autoSave.addEventListener("change", () => {
+        autoSave = !autoSave;
+        console.log("autosave", autoSave);
     });
 });

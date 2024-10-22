@@ -45,6 +45,14 @@
             </div>
             <div class="right-title">
                 <div>
+                    <button settings title="Settings">
+                        <img src="assets/settings.svg" alt="Settings" /> 
+                    </button>
+                </div>
+                <div>
+                    <button save-as title="Save as..."> 
+                        <img src="assets/save-as.svg" alt="Save as..." /> 
+                    </button>
                     <button save title="Save file"> 
                         <img src="assets/save.svg" alt="Save" /> 
                     </button>
@@ -58,6 +66,35 @@
             </div>
         </nav>
     </div>
+
+    <!-- Settings modal dialog -->
+     <dialog settings-modal class="settings-modal">
+        <div class="settings-close">
+            <h1>Settings</h1>
+            <button settings-close class="close" title="Close">
+                <img src="assets/close.svg" alt="Close" />
+            </button>
+        </div>
+        <div>
+            <div class="settings-heading">
+                <h2>Preferences</h2>
+                <p>Manage your code editor preferences to cater to your style.</p>
+            </div>
+            <div class="settings-item">
+                <div class="settings-title">
+                    <h3>Auto save</h3>
+                </div>
+                <div class="settings-input">
+                    <label class="switch">
+                        <input auto-save-toggle type="checkbox">
+                        <span class="slider round"></span>
+                    </label>
+                    <p>Your file will automatically save.</p>
+                </div>
+            </div>
+        </div>
+     </dialog>
+
     <main class="editor">
         <textarea fileTextarea disabled
         rows="1"
