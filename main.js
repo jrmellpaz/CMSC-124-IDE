@@ -1,4 +1,4 @@
-const { BrowserWindow, app, ipcMain, dialog } = require("electron");
+const { BrowserWindow, app, ipcMain, dialog, Notification} = require("electron");
 const path = require("path");
 const fs = require("fs");
 
@@ -6,6 +6,7 @@ const fs = require("fs");
 require("electron-reloader")(module);
 
 let mainWindow;
+let openedFilePath;
 
 // Main window
 const createWindow = () => {
@@ -48,21 +49,89 @@ const createWindow = () => {
 
 app.whenReady().then(createWindow);
 
+
+const handleError = () => {
+    new Notification({
+      title: "Error",
+      body: "Sorry, something went wrong :(",
+    }).show();
+  };
+
+
+ipcMain.on("open-document-triggered", () => {
+    dialog.showOpenDialog({
+      properties: ["openFile"],
+      filters: [{ name: "text files", extensions: ["txt"] }],
+    }).then(({ filePaths }) => {
+      const filePath = filePaths[0];
+  
+      fs.readFile(filePath, "utf8", (error, content) => {
+        if (error) {
+          handleError();
+        } else {
+          app.addRecentDocument(filePath);
+          openedFilePath = filePath;
+          mainWindow.webContents.send("document-opened", { filePath, content });
+        }
+      });
+    });
+  });
+
+
 ipcMain.on("create-document-triggered", () => {
     dialog.showSaveDialog(mainWindow, {
-        filters: [{
-            name: "text files", extensions: ["txt"]
-        }, {
-            name: "robas files", extensions: ["rbs"]
-        }]
+        filters: [
+            { name: "text files", extensions: ["txt"] },
+            { name: "robas files", extensions: ["rbs"] }
+        ]
     }).then(({ filePath }) => {
         fs.writeFile(filePath, "", (error) => {
-            if(error) {
-                console.log("error", error);
+            if (error) {
+              handleError();
+            } else {
+              app.addRecentDocument(filePath);
+              openedFilePath = filePath;
+              mainWindow.webContents.send("document-created", filePath);
             }
-            else {
-                mainWindow.webContents.send("document-created", filePath)
-            }
-        })
-    })
-})
+        });
+    });
+});
+
+ipcMain.on("save-document-triggered", () => {
+  dialog.showSaveDialog(mainWindow, {
+    title: "Save As", 
+    defaultPath: openedFilePath || "untitled.txt", // If the file was already opened, use that path, otherwise provide a default file name
+    filters: [
+      { name: "Text Files", extensions: ["txt"] },
+      { name: "Robas Files", extensions: ["rbs"] }
+    ]
+  }).then(({ filePath }) => {
+    if (!filePath) {
+      console.log("No file path provided. Operation canceled.");
+      return;
+    }
+
+    fs.writeFile(filePath, "", (error) => {
+      if (error) {
+        console.error("Failed to write the file:", error);
+        handleError(); 
+      } else {
+        app.addRecentDocument(filePath);
+        openedFilePath = filePath; 
+        mainWindow.webContents.send("document-saved", filePath); 
+      }
+    });
+  }).catch((err) => {
+    console.error("Error during save dialog:", err);
+    handleError(); 
+  });
+});
+
+
+ipcMain.on("file-content-updated", (_, textareaContent) => {
+    fs.writeFile(openedFilePath, textareaContent, (error) => {
+      if (error) {
+        handleError();
+      }
+    });
+  });
