@@ -7,6 +7,18 @@ require("electron-reloader")(module);
 
 let mainWindow;
 let openedFilePath;
+const userDataPath = "C:\\Users\\user\\Documents\\stratos\\user_data.json";
+
+function readData() {
+    fs.readFile(userDataPath, 'utf8', (err, data) => {
+        if (err) {
+            console.error(err);
+            return;
+        }
+        const parsedData = JSON.parse(data)
+        mainWindow.webContents.send("read-data", parsedData);
+    });
+}
 
 // Main window
 const createWindow = () => {
@@ -22,7 +34,6 @@ const createWindow = () => {
         icon: "assets/icon.png",
     });
 
-    // mainWindow.setIcon("assets/icon.png");
     mainWindow.webContents.openDevTools();
     mainWindow.loadFile("index.html");
 
@@ -45,9 +56,32 @@ const createWindow = () => {
         mainWindow.center();
         mainWindow.show();
     }, 5000);
+
+    mainWindow.webContents.on("did-finish-load", readData);
+
+    mainWindow.on("close", e => {
+        e.preventDefault();
+        console.log("window close prevented");
+        mainWindow.webContents.send("save-user-data");
+    });
 };
 
 app.whenReady().then(createWindow);
+
+ipcMain.on("close-app", (_, settingsData) => {
+    const data = JSON.stringify(settingsData);
+    console.log("data", data)
+    fs.writeFile(userDataPath, data, (error) => {
+        if (error) {
+            console.error("Failed to write the file:", error);
+            handleError(); 
+        }
+        else { 
+            app.exit();
+        }
+    });
+});
+
 const handleError = (message = "Sorry, something went wrong :(") => {
     new Notification({
       	title: "Error",
@@ -74,7 +108,6 @@ ipcMain.on("open-document-triggered", () => {
 		});
     });
   });
-
 
 ipcMain.on("create-document-triggered", () => {
     dialog.showSaveDialog(mainWindow, {

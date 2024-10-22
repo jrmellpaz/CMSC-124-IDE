@@ -87,7 +87,7 @@ textarea.addEventListener("keydown", ev => {
         const newCursorPos = endPos + 1 + indentation.length;
         textarea.setSelectionRange(newCursorPos, newCursorPos);
     }
-  });
+});
 
 // Counting the number of lines in the textarea
 const linesChip = document.querySelector('[lines-chip]');

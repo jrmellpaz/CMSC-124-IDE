@@ -1,8 +1,10 @@
-const { ipcRenderer, clipboard } = require("electron");
+const { ipcRenderer, clipboard, contextBridge } = require("electron");
 const path = require("path");       
 const UndoRedojs = require("undoredo.js");
 
 window.addEventListener("DOMContentLoaded", () => {
+    let settingsData;
+
     const elements = {
         title: document.querySelector('[document-name]'),
         open: document.querySelector('[open]'),
@@ -21,7 +23,6 @@ window.addEventListener("DOMContentLoaded", () => {
         linesChip: document.querySelector('[lines-chip]'),
         settingsModal: document.querySelector('[settings-modal]'),
         closeButton: document.querySelector('[settings-close]'),
-    
         autoSave: document.querySelector('[auto-save-toggle]'),
     };
 
@@ -41,11 +42,16 @@ window.addEventListener("DOMContentLoaded", () => {
         ipcRenderer.send("file-content-updated", elements.fileTextarea.value);
     });
 
+    // Retrieve data
+    ipcRenderer.on("read-data", (_, data) => {
+        settingsData = data;
+        elements.autoSave.checked = (settingsData.preferences.autoSave === "false") ? false : true;
+    });
+
     // Save user data before closing app
     ipcRenderer.on("save-user-data", () => {
-        window.localStorage.setItem("autoSave") = elements.autoSave.checked;
-
-        ipcRenderer.send("close-app");
+        settingsData.preferences.autoSave = (elements.autoSave.checked === true) ? "true" : "false";
+        ipcRenderer.send("close-app", settingsData);
     });
 
     // Update file content automatically when autosave is enabled in settings
@@ -203,10 +209,5 @@ window.addEventListener("DOMContentLoaded", () => {
                 elements.settingsModal.close();
             }, {once: true});
         }
-    });
-    // Settings items
-    elements.autoSave.addEventListener("change", () => {
-        autoSave = !autoSave;
-        console.log("autosave", autoSave);
     });
 });
