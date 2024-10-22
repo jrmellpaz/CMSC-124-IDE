@@ -1,4 +1,5 @@
 const { ipcRenderer, clipboard } = require("electron");
+const path = require("path");       
 const UndoRedojs = require("undoredo.js");
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -11,11 +12,28 @@ window.addEventListener("DOMContentLoaded", () => {
         paste: document.querySelector('[paste]'),
         undo: document.querySelector('[undo]'),
         redo: document.querySelector('[redo]'),
+        save: document.querySelector('[save]'),
         fileTextarea: document.querySelector('[fileTextarea]'),
         footerArea: document.querySelector('[footer-area]'),
         errorsChip: document.querySelector('[errors-chip]'),
         linesChip: document.querySelector('[lines-chip]'),
     };
+
+    const handleDocumentChange = (filePath, content = "") => {
+        // elements.title.innerHTML = filePath.replace(/^.*[\\/]/, '');
+        elements.title.innerHTML = path.parse(filePath).base;
+        elements.title.style.fontStyle = "normal";
+        elements.fileTextarea.removeAttribute("disabled");
+        elements.fileTextarea.value = content;
+        elements.fileTextarea.placeholder = "Start writing your code...";
+        elements.fileTextarea.focus();
+        elements.footerArea.style.display = "flex";
+    };
+
+    //Update File Content
+    elements.fileTextarea.addEventListener("input", (e) => {
+        ipcRenderer.send("file-content-updated", e.target.value);
+    });
 
     // Creating a new file
     elements.create.addEventListener("click", () => {
@@ -23,16 +41,31 @@ window.addEventListener("DOMContentLoaded", () => {
     });
 
     ipcRenderer.on("document-created", (_, filePath) => {
-        elements.title.innerHTML = filePath.replace(/^.*[\\/]/, '');
-        elements.title.style.fontStyle = "normal";
-        elements.fileTextarea.removeAttribute("disabled");
-        elements.fileTextarea.placeholder = "Start writing your code...";
-        elements.fileTextarea.focus();
-        elements.footerArea.style.display = "flex";
+        handleDocumentChange(filePath);
     });
 
     // Opening an existing file
+    elements.open.addEventListener("click", () => {
+        ipcRenderer.send("open-document-triggered");
+    });
 
+    ipcRenderer.on("document-opened", (_, { filePath, content }) => {
+        handleDocumentChange(filePath, content);
+    });
+
+
+    //Saving a file
+    elements.save.addEventListener("click", () => {
+        ipcRenderer.send("save-document-triggered"); 
+    });
+
+    window.addEventListener("keydown", (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            ipcRenderer.send("save-document-triggered");
+        }
+    });
+    
     // Cut text in textarea
     elements.cut.addEventListener("click", () => {
         const { value, selectionStart, selectionEnd } = elements.fileTextarea;
