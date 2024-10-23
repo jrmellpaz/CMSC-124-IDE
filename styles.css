@@ -130,10 +130,23 @@ body {
     outline: none;
     border: none;
     color: var(--text2);
+    padding: 0.75em;
+    width: 15ch;
+    border-radius: 0.25em;
+    border: 2px solid var(--blue2);
+}
+
+.document-name:disabled, .document-name:disabled:hover{
+    border: 2px solid var(--blue2);
+}
+
+.document-name:hover, .document-name:focus {
+    border: 2px solid var(--blue1);
 }
 
 .document-name::placeholder {
     color: var(--text2);
+    opacity: 0.5;
 }
 
 .editor {

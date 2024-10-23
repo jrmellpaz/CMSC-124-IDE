@@ -36,7 +36,7 @@ window.addEventListener("DOMContentLoaded", () => {
         elements.fileTextarea.focus();
         elements.footerArea.style.display = "flex";
     };
-
+    
     // Saving file
     elements.save.addEventListener("click", () => {
         ipcRenderer.send("file-content-updated", elements.fileTextarea.value);

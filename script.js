@@ -130,3 +130,17 @@ const linesChip = document.querySelector('[lines-chip]');
 
     linesChip.innerHTML = numberOfLines + " lines"; 
 }));
+
+// Expand input text box based on value of length
+const documentTitle = document.querySelector('[document-name]');
+
+["hover", "focus", "input"].forEach(e => documentTitle.addEventListener(e, () => {
+    documentTitle.style.fontStyle = documentTitle.value.length === 0 ? "italic" : "normal";
+    documentTitle.style.width = documentTitle.value.length === 0 ? "1ch" : (documentTitle.value.length / 1.1) + "ch";
+    documentTitle.placeholder = "";
+}));
+
+documentTitle.addEventListener("blur", () => {
+    documentTitle.style.width = documentTitle.value.length === 0 ? "15ch" : documentTitle.style.width;
+    documentTitle.placeholder = "Untitled document";
+});
