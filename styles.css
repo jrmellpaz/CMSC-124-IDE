@@ -125,7 +125,6 @@ body {
 .document-name {
     font-size: 1em;
     font-style: italic;
-    white-space: nowrap;
     margin-left: 0.5em;
     background-color: var(--blue2);
     outline: none;

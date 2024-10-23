@@ -7,7 +7,8 @@ require("electron-reloader")(module);
 
 let mainWindow;
 let openedFilePath;
-const userDataPath = "C:\\Users\\user\\Documents\\stratos\\user_data.json";
+const userDataPath = path.join(app.getAppPath(), "user_data.json");
+// "C:\\Users\\user\\Documents\\stratos\\user_data.json";
 
 function readData() {
     fs.readFile(userDataPath, 'utf8', (err, data) => {
@@ -54,6 +55,7 @@ const createWindow = () => {
     setTimeout(() => {
         splash.close();
         mainWindow.center();
+        mainWindow.maximize();
         mainWindow.show();
     }, 5000);
 
