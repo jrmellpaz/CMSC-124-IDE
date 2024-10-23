@@ -28,7 +28,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     const handleDocumentChange = (filePath, content = "") => {
         // elements.title.innerHTML = filePath.replace(/^.*[\\/]/, '');
-        elements.title.innerHTML = path.parse(filePath).base;
+        elements.title.value = path.parse(filePath).base;
         elements.title.style.fontStyle = "normal";
         elements.fileTextarea.removeAttribute("disabled");
         elements.fileTextarea.value = content;

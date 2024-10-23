@@ -40,7 +40,7 @@
                     </button>
                 </div>
                 <div>
-                    <span document-name class="document-name">No file selected</span>
+                    <input disabled type="text" document-name class="document-name" placeholder="No file selected" />
                 </div>
             </div>
             <div class="right-title">
@@ -68,7 +68,7 @@
     </div>
 
     <!-- Settings modal dialog -->
-     <dialog settings-modal class="settings-modal">
+    <dialog settings-modal class="settings-modal">
         <div class="settings-close">
             <h1>Settings</h1>
             <button settings-close class="close" title="Close">
@@ -89,11 +89,11 @@
                         <input auto-save-toggle type="checkbox">
                         <span class="slider round"></span>
                     </label>
-                    <p>Your file will automatically save.</p>
+                    <p>Your files will be saved automatically.</p>
                 </div>
             </div>
         </div>
-     </dialog>
+    </dialog>
 
     <main class="editor">
         <textarea fileTextarea disabled

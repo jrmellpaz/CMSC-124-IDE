@@ -123,10 +123,18 @@ body {
 }
 
 .document-name {
-    color: var(--text2);
+    font-size: 1em;
     font-style: italic;
     white-space: nowrap;
     margin-left: 0.5em;
+    background-color: var(--blue2);
+    outline: none;
+    border: none;
+    color: var(--text2);
+}
+
+.document-name::placeholder {
+    color: var(--text2);
 }
 
 .editor {
