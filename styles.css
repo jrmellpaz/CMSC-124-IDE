@@ -152,9 +152,12 @@ body {
 .editor {
     width: 90dvw;
     margin: 2em auto 0 auto;
-    height: 75dvh;
+    height: auto;
     position: relative;
     bottom: 0;
+    flex-grow: 1;
+    box-sizing: border-box;
+    padding-bottom: 1em;
 }
 
 .editor textarea {
@@ -192,7 +195,6 @@ footer {
     flex-direction: row;
     display: none;
     padding-top: 0.5em;
-    position: fixed;
     bottom: 0.5em;
 }
 
@@ -371,4 +373,61 @@ input:checked + .slider:before {
 
 .closePopup {
     animation: popupClose 0.25s;
+}
+
+.terminal {
+    background-color: var(--blue2);
+    height: 36dvh;
+    width: 100dvw;
+    box-shadow: rgba(3, 21, 39, 0.2) 0px 7px 29px 5px;
+    box-sizing: border-box;
+    padding: 0.75em 2em 0.25em 2em;
+    display: flex;
+    flex-direction: column;
+}
+
+.terminal div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.terminal div span {
+    font-family: var(--main-font);
+    color: var(--text2);
+    font-size: 0.7em;
+    background-color: var(--blue3);
+    padding: 0.3em 0.75em;
+    border-radius: 50px;
+    width: fit-content;
+    font-style: bold;
+}
+
+.terminal div button {
+    height: 100%;
+    width: fit-content;
+    outline: none;
+    border: none;
+    padding: 0.5em;
+    border-radius: 0.5em;
+    cursor: pointer;
+}
+
+.terminal div button:hover {
+    background-color: var(--blue3);
+}
+
+.terminal .terminal-text {
+    flex-grow: 1;
+    outline: none;
+    border: none;
+    text-decoration: none;
+    resize: none;
+    color: var(--text2);
+    box-sizing: border-box;
+    caret-color: var(--text2);
+    background-color: var(--blue2);
+    font-family: var(--editor-font);
+    font-size: 0.75em;
 }

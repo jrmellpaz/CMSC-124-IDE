@@ -1,11 +1,12 @@
 const textarea = document.querySelector("textarea");
+const terminalTextarea = document.querySelector('[terminal-textarea]');
 
 // Indentation
 const editorIndentSpaces = 1;
 const indent = "\t".repeat(editorIndentSpaces);
 const unIndentPattern = new RegExp(`^\t{${editorIndentSpaces}}`);
 
-textarea.addEventListener("keydown", ev => {
+[textarea, terminalTextarea].forEach(textarea => textarea.addEventListener("keydown", ev => {
     const textarea = ev.target;
     const v = textarea.value;
     const startPos = textarea.selectionStart;
@@ -87,7 +88,7 @@ textarea.addEventListener("keydown", ev => {
         const newCursorPos = endPos + 1 + indentation.length;
         textarea.setSelectionRange(newCursorPos, newCursorPos);
     }
-});
+}));
 
 // Counting the number of lines in the textarea
 const linesChip = document.querySelector('[lines-chip]');
@@ -143,4 +144,17 @@ const documentTitle = document.querySelector('[document-name]');
 documentTitle.addEventListener("blur", () => {
     documentTitle.style.width = documentTitle.value.length === 0 ? "15ch" : documentTitle.style.width;
     documentTitle.placeholder = "Untitled document";
+});
+
+// Close terminal
+const terminalWindow = document.querySelector('[terminal]');
+const closeTerminalButton = document.querySelector('[close-terminal]');
+const terminalButton = document.querySelector('[terminal-button]');
+
+closeTerminalButton.addEventListener("click", () => {
+    terminalWindow.style.display = "none";
+});
+
+terminalButton.addEventListener("click", () => {
+    terminalWindow.style.display = terminalWindow.style.display === "flex" ? "none" : "flex";
 });

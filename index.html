@@ -48,6 +48,9 @@
                     <button settings title="Settings">
                         <img src="assets/settings.svg" alt="Settings" /> 
                     </button>
+                    <button terminal-button title="Open terminal window">
+                        <img src="assets/terminal.svg" alt="Terminal window" />
+                    </button>
                 </div>
                 <div>
                     <button save-as title="Save as..."> 
@@ -113,5 +116,14 @@
             </div>
         </footer>
     </main>
+    <div terminal class="terminal">
+        <div>
+            <span>TERMINAL</span>
+            <button close-terminal class="Close terminal">
+                <img src="assets/close.svg" alt="Close terminal" />
+            </button>
+        </div>
+        <textarea terminal-textarea spellcheck="false" class="terminal-text"></textarea>
+    </div>
 </body>
 </html>
