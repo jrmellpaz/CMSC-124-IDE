@@ -24,6 +24,8 @@ window.addEventListener("DOMContentLoaded", () => {
         settingsModal: document.querySelector('[settings-modal]'),
         closeButton: document.querySelector('[settings-close]'),
         autoSave: document.querySelector('[auto-save-toggle]'),
+        compile: document.querySelector('[compile]'),
+        execute: document.querySelector('[execute]'),
     };
 
     const handleDocumentChange = (filePath, content = "") => {
@@ -35,6 +37,16 @@ window.addEventListener("DOMContentLoaded", () => {
         elements.fileTextarea.placeholder = "Start writing your code...";
         elements.fileTextarea.focus();
         elements.footerArea.style.display = "flex";
+
+        elements.cut.removeAttribute("disabled");
+        elements.copy.removeAttribute("disabled");
+        elements.paste.removeAttribute("disabled");
+        elements.undo.removeAttribute("disabled");
+        elements.redo.removeAttribute("disabled");
+        elements.saveAs.removeAttribute("disabled");
+        elements.save.removeAttribute("disabled");
+        elements.compile.removeAttribute("disabled");
+        elements.execute.removeAttribute("disabled");
     };
     
     // Saving file
