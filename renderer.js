@@ -240,7 +240,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
         try {
             lines.forEach(line => parser.parse(line));
-            displayOutput("Compilation successful!\n" + JSON.stringify(parser.symbol))
+            displayOutput("Compilation successful!\n" + JSON.stringify(parser.symbolTable));
         }
         catch (error) {
 

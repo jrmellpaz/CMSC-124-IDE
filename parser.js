@@ -2,8 +2,6 @@ export class RobasParser {
     constructor() {
       this.symbolTable = {};
     }
-
-    getPa
   
     // Regular expression for matching "var <data type> <identifier>"
     parseVariableDeclaration(line) {
