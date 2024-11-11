@@ -1,17 +1,17 @@
-const { BrowserWindow, app, ipcMain, dialog, Notification} = require("electron");
-const path = require("path");
-const fs = require("fs");
+import { BrowserWindow, app, ipcMain, dialog, Notification } from "electron";
+import { join } from "path";
+import { readFile, writeFile } from "fs";
 
 // Electron reloader
 require("electron-reloader")(module);
 
 let mainWindow;
 let openedFilePath;
-const userDataPath = path.join(app.getAppPath(), "user_data.json");
+const userDataPath = join(app.getAppPath(), "user_data.json");
 // "C:\\Users\\user\\Documents\\stratos\\user_data.json";
 
 function readData() {
-    fs.readFile(userDataPath, 'utf8', (err, data) => {
+    readFile(userDataPath, 'utf8', (err, data) => {
         if (err) {
             console.error(err);
             return;
@@ -29,7 +29,7 @@ const createWindow = () => {
         show: false,
         autoHideMenuBar: true,
         webPreferences: {
-            preload: path.join(app.getAppPath(), "renderer.js"),
+            preload: join(app.getAppPath(), "renderer.js"),
             nodeIntegration: true,
         },
         icon: "assets/icon.png",
@@ -73,7 +73,7 @@ app.whenReady().then(createWindow);
 ipcMain.on("close-app", (_, settingsData) => {
     const data = JSON.stringify(settingsData);
     console.log("data", data)
-    fs.writeFile(userDataPath, data, (error) => {
+    writeFile(userDataPath, data, (error) => {
         if (error) {
             console.error("Failed to write the file:", error);
             handleError(); 
@@ -98,7 +98,7 @@ ipcMain.on("open-document-triggered", () => {
     }).then(({ filePaths }) => {
       	const filePath = filePaths[0];
   
-		fs.readFile(filePath, "utf8", (error, content) => {
+		readFile(filePath, "utf8", (error, content) => {
 			if (error) {
 				handleError();
 			} 
@@ -118,7 +118,7 @@ ipcMain.on("create-document-triggered", () => {
             { name: "robas files", extensions: ["rbs"] }
         ]
     }).then(({ filePath }) => {
-        fs.writeFile(filePath, "", (error) => {
+        writeFile(filePath, "", (error) => {
             if (error) {
               	handleError();
             } else {
@@ -144,7 +144,7 @@ ipcMain.on("save-document-triggered", (_, textareaContent) => {
 			return;
 		}
 
-		fs.writeFile(filePath, textareaContent, (error) => {
+		writeFile(filePath, textareaContent, (error) => {
 			if (error) {
 				console.error("Failed to write the file:", error);
 				handleError(); 
@@ -162,7 +162,7 @@ ipcMain.on("save-document-triggered", (_, textareaContent) => {
 });
 
 ipcMain.on("file-content-updated", (_, textareaContent) => {
-    fs.writeFile(openedFilePath, textareaContent, (error) => {
+    writeFile(openedFilePath, textareaContent, (error) => {
 		if (error) {
 			handleError();
 		}

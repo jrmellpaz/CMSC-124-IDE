@@ -1,6 +1,7 @@
-const { ipcRenderer, clipboard, contextBridge } = require("electron");
-const path = require("path");       
-const UndoRedojs = require("undoredo.js");
+import { ipcRenderer, clipboard, contextBridge } from "electron";
+import { parse } from "path";       
+import UndoRedojs from "undoredo.js";
+import { RobasParser } from "./parser";
 
 window.addEventListener("DOMContentLoaded", () => {
     let settingsData;
@@ -26,11 +27,12 @@ window.addEventListener("DOMContentLoaded", () => {
         autoSave: document.querySelector('[auto-save-toggle]'),
         compile: document.querySelector('[compile]'),
         execute: document.querySelector('[execute]'),
+        terminalTextarea: document.querySelector('[terminal-textarea]'),
     };
 
     const handleDocumentChange = (filePath, content = "") => {
         // elements.title.innerHTML = filePath.replace(/^.*[\\/]/, '');
-        elements.title.value = path.parse(filePath).base;
+        elements.title.value = parse(filePath).base;
         elements.title.style.fontStyle = "normal";
         elements.fileTextarea.removeAttribute("disabled");
         elements.fileTextarea.value = content;
@@ -50,9 +52,10 @@ window.addEventListener("DOMContentLoaded", () => {
     };
     
     // Saving file
-    elements.save.addEventListener("click", () => {
+    const saveFile = () => {
         ipcRenderer.send("file-content-updated", elements.fileTextarea.value);
-    });
+    }
+    elements.save.addEventListener("click", saveFile);
 
     // Retrieve data
     ipcRenderer.on("read-data", (_, data) => {
@@ -221,5 +224,30 @@ window.addEventListener("DOMContentLoaded", () => {
                 elements.settingsModal.close();
             }, {once: true});
         }
+    });
+
+    // Compile
+    const displayOutput = (output) => {
+        const textarea = elements.terminalTextarea;
+        textarea.textContent = output;
+    }
+
+    const compileCode = () => {
+        const fileContent = elements.fileTextarea.value;
+        const parser = new RobasParser();
+
+        const lines = fileContent.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+
+        try {
+            lines.forEach(line => parser.parse(line));
+            displayOutput("Compilation successful!\n" + JSON.stringify(parser.symbol))
+        }
+        catch (error) {
+
+        }
+    }
+    elements.compile.addEventListener("click", () => {
+        saveFile();
+        compileCode();
     });
 });
