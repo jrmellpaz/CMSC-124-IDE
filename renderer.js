@@ -1,10 +1,11 @@
-import { ipcRenderer, clipboard, contextBridge } from "electron";
-import { parse } from "path";       
-import UndoRedojs from "undoredo.js";
-import { RobasParser } from "./parser";
+const { ipcRenderer, clipboard } = require("electron");
+const path = require("path");       
+const UndoRedojs = require("undoredo.js");
+// const RobasParser = require("./parser.ts");
 
 window.addEventListener("DOMContentLoaded", () => {
     let settingsData;
+    let directoryPath = "";
 
     const elements = {
         title: document.querySelector('[document-name]'),
@@ -32,7 +33,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     const handleDocumentChange = (filePath, content = "") => {
         // elements.title.innerHTML = filePath.replace(/^.*[\\/]/, '');
-        elements.title.value = parse(filePath).base;
+        elements.title.value = path.parse(filePath).base;
         elements.title.style.fontStyle = "normal";
         elements.fileTextarea.removeAttribute("disabled");
         elements.fileTextarea.value = content;
@@ -58,8 +59,12 @@ window.addEventListener("DOMContentLoaded", () => {
     elements.save.addEventListener("click", saveFile);
 
     // Retrieve data
-    ipcRenderer.on("read-data", (_, data) => {
-        settingsData = data;
+    ipcRenderer.on("read-data", (_, {parsedData, directoryPath}) => {
+        settingsData = parsedData;
+        directoryPath = String(directoryPath);
+
+        console.log("path:", directoryPath);
+
         elements.autoSave.checked = (settingsData.preferences.autoSave === "false") ? false : true;
     });
 
@@ -232,22 +237,18 @@ window.addEventListener("DOMContentLoaded", () => {
         textarea.textContent = output;
     }
 
-    const compileCode = () => {
-        const fileContent = elements.fileTextarea.value;
-        const parser = new RobasParser();
-
-        const lines = fileContent.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-
-        try {
-            lines.forEach(line => parser.parse(line));
-            displayOutput("Compilation successful!\n" + JSON.stringify(parser.symbol))
-        }
-        catch (error) {
-
-        }
+    const parseCode = () => {
+        ipcRenderer.send("start-parser", elements.fileTextarea.value);
     }
+
+    ipcRenderer.on("parser-finished", (_, output) => {
+        displayOutput(output);
+
+        // COMPILING HERE
+    });
+
     elements.compile.addEventListener("click", () => {
         saveFile();
-        compileCode();
+        parseCode();
     });
 });

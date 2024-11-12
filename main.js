@@ -1,23 +1,28 @@
-import { BrowserWindow, app, ipcMain, dialog, Notification } from "electron";
-import { join } from "path";
-import { readFile, writeFile } from "fs";
+const { BrowserWindow, app, ipcMain, dialog, Notification} = require("electron");
+const path = require("path");
+const fs = require("fs");
+const tsNode = require("ts-node");
+const RobasParser = require("./parser.js");
 
 // Electron reloader
 require("electron-reloader")(module);
+// tsNode.register();
+// const parserPath = path.join(app.getAppPath(), "parser.ts");
 
 let mainWindow;
 let openedFilePath;
-const userDataPath = join(app.getAppPath(), "user_data.json");
+const userDataPath = path.join(app.getAppPath(), "user_data.json");
 // "C:\\Users\\user\\Documents\\stratos\\user_data.json";
 
 function readData() {
-    readFile(userDataPath, 'utf8', (err, data) => {
+    fs.readFile(userDataPath, 'utf8', (err, data) => {
         if (err) {
             console.error(err);
             return;
         }
         const parsedData = JSON.parse(data)
-        mainWindow.webContents.send("read-data", parsedData);
+        const directoryPath = app.getAppPath();
+        mainWindow.webContents.send("read-data", {parsedData, directoryPath});
     });
 }
 
@@ -29,8 +34,9 @@ const createWindow = () => {
         show: false,
         autoHideMenuBar: true,
         webPreferences: {
-            preload: join(app.getAppPath(), "renderer.js"),
+            preload: path.join(app.getAppPath(), "renderer.js"),
             nodeIntegration: true,
+            // contextIsolation: true
         },
         icon: "assets/icon.png",
     });
@@ -70,10 +76,26 @@ const createWindow = () => {
 
 app.whenReady().then(createWindow);
 
+ipcMain.on("start-parser", (_, fileContent) => {
+    const parser = new RobasParser();
+    let output;
+    const lines = fileContent.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+
+    try {
+        lines.forEach(line => parser.parse(line));
+        output = "Parsing successful!\n" + JSON.stringify(parser.symbolTable);
+    }
+    catch (e) {
+        output = `Parsing failed: ${e.message}`;
+    }
+
+    mainWindow.webContents.send("parser-finished", output);
+});
+
 ipcMain.on("close-app", (_, settingsData) => {
     const data = JSON.stringify(settingsData);
     console.log("data", data)
-    writeFile(userDataPath, data, (error) => {
+    fs.writeFile(userDataPath, data, (error) => {
         if (error) {
             console.error("Failed to write the file:", error);
             handleError(); 
@@ -98,7 +120,7 @@ ipcMain.on("open-document-triggered", () => {
     }).then(({ filePaths }) => {
       	const filePath = filePaths[0];
   
-		readFile(filePath, "utf8", (error, content) => {
+		fs.readFile(filePath, "utf8", (error, content) => {
 			if (error) {
 				handleError();
 			} 
@@ -118,7 +140,7 @@ ipcMain.on("create-document-triggered", () => {
             { name: "robas files", extensions: ["rbs"] }
         ]
     }).then(({ filePath }) => {
-        writeFile(filePath, "", (error) => {
+        fs.writeFile(filePath, "", (error) => {
             if (error) {
               	handleError();
             } else {
@@ -144,7 +166,7 @@ ipcMain.on("save-document-triggered", (_, textareaContent) => {
 			return;
 		}
 
-		writeFile(filePath, textareaContent, (error) => {
+		fs.writeFile(filePath, textareaContent, (error) => {
 			if (error) {
 				console.error("Failed to write the file:", error);
 				handleError(); 
@@ -162,7 +184,7 @@ ipcMain.on("save-document-triggered", (_, textareaContent) => {
 });
 
 ipcMain.on("file-content-updated", (_, textareaContent) => {
-    writeFile(openedFilePath, textareaContent, (error) => {
+    fs.writeFile(openedFilePath, textareaContent, (error) => {
 		if (error) {
 			handleError();
 		}
