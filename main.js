@@ -1,13 +1,10 @@
 const { BrowserWindow, app, ipcMain, dialog, Notification} = require("electron");
 const path = require("path");
 const fs = require("fs");
-const tsNode = require("ts-node");
 const RobasParser = require("./parser.js");
 
 // Electron reloader
 require("electron-reloader")(module);
-// tsNode.register();
-// const parserPath = path.join(app.getAppPath(), "parser.ts");
 
 let mainWindow;
 let openedFilePath;
