@@ -79,7 +79,7 @@ ipcMain.on("start-parser", (_, fileContent) => {
     const lines = fileContent.split('\n').map(line => line.trim()).filter(line => line.length > 0);
 
     try {
-        lines.forEach(line => parser.parse(line));
+        parser.parse(lines);
         output = "Parsing successful!\n" + JSON.stringify(parser.symbolTable);
     }
     catch (e) {
