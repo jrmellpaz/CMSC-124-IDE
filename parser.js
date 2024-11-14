@@ -2,6 +2,8 @@ class RobasParser {
     constructor() {
         this._symbolTable = {};
         this._statements = [];
+        this._conditionalDeclaration = false;
+        this._isInConditional = false;
     }
 
     get symbolTable() {
@@ -28,17 +30,29 @@ class RobasParser {
                 if (!this.isValidIdentifier(identifier)) {
                     throw new Error(`Invalid identifier name: '${identifier}'.`);
                 }
-                if (this.symbolTable[identifier]) {
-                    throw new Error(`Variable '${identifier}' is already declared.`);
-                }
 
                 // If literal exists, check if it matches the data type
                 const value = literal ? this.parseLiteral(literal, dataType) : null;
                 // Store variable in the symbol table with or without assignment
-                this.symbolTable[identifier] = {
-                    dataType,
-                    value
-                };
+
+                if (!this._isInConditional && this._symbolTable[identifier] && !this._symbolTable[identifier].conditionalDeclaration) {
+                    // console.log(this._symbolTable);
+                    throw new Error(`Variable '${identifier}' is already declared: ${line}.`);
+                }
+                else if (!this._isInConditional && this._symbolTable[identifier] && !this._symbolTable[identifier].conditionalDeclaration) {
+                    this._symbolTable[identifier] = {
+                        ...this._symbolTable[identifier], 
+                        value: literal,
+                        conditionalDeclaration: true
+                    } 
+                }
+                else {
+                    this._symbolTable[identifier] = {
+                        dataType,
+                        value,
+                        conditionalDeclaration: this._conditionalDeclaration
+                    };
+                }
             });
         }
         else {
@@ -47,11 +61,15 @@ class RobasParser {
     }
 
     parseStatements(lines) {
+        console.log("lines here", lines);
         const statements = [];
         let currentStatement = "";
         let braceCount = 0;
 
-        lines.split(/(\n)/).forEach(line => {
+        const test = lines.split(/(\n)/);
+        console.log("test:", test);
+        
+        test.forEach(line => {
             line.trim();
             if (!line) {
                 return;
@@ -80,30 +98,42 @@ class RobasParser {
             }
         });
 
-        statements.forEach(statement => {
-            console.log("here!!!!");
-            this.parseStatement(statement);
+        console.log("here!!!!", statements);
+        statements.filter(statement => statement.length > 0).forEach(statement => {
+            this._conditionalDeclaration = true;
+            this.parseVariableDeclaration(statement);
         });
     }
 
     parseStatement(line) {
+        console.log("line-----", line);
         const statementRegex = /^([a-zA-Z_]\w*)\s*=\s*(.+)\s*;$/;
         const match = line.match(statementRegex);
 
         if (!match) {
-            console.log("line-----", line);
-            throw new Error("Invalid syntax for a statement.");
+            throw new Error(`Invalid syntax for statement: '${line}'.`);
         }
 
         const identifier = match[1];
-        if (!this._symbolTable[identifier]) {
+        // if (!this._symbolTable[identifier]) {
+        //     throw new Error(`Variable '${identifier}' is not declared.`);
+        // }
+        if (
+            !this._isInConditional && !this._symbolTable[identifier] && 
+            !this._isInConditional && this._symbolTable[identifier] && !this._symbolTable[identifier].conditionalDeclaration
+        ) {
             throw new Error(`Variable '${identifier}' is not declared.`);
         }
-
+        console.log("bananananannna");
         const expression = match[2];
         const result = this.evaluateExpression(expression, this._symbolTable[identifier].dataType);
 
-        this._symbolTable[identifier].value = result;
+        this._symbolTable[identifier] = {
+            ...this._symbolTable[identifier],
+            value: result,
+            conditionalDeclaration: this._conditionalDeclaration
+        }
+
         this._statements.push(line);
     }
 
@@ -256,6 +286,7 @@ class RobasParser {
             console.log(match);
 
             if (match) {
+                this._isInConditional = true;
                 const keyword = match[1] ?? match[3];
                 console.log("keyword", keyword);
                 const condition = match[2]?.trim();
@@ -282,6 +313,9 @@ class RobasParser {
                         this.parseStatements(block);
                     }
                 }
+
+                this._isInConditional = false;
+                this._conditionalDeclaration = false;
             }
             else {
                 this.parseVariableDeclaration(line);
