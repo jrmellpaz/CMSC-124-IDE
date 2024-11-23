@@ -63,7 +63,7 @@ class RobasParser {
             };
         }
         else {
-            this.parseStatement(line);
+            await this.parseStatement(line);
         }
     }
 
@@ -112,7 +112,7 @@ class RobasParser {
         });
     }
 
-    parseStatement(line) {
+    async parseStatement(line) {
         console.log("line-----", line);
         const statementRegex = /^([a-zA-Z_]\w*)\s*=\s*(.+)\s*;$/;
         const match = line.match(statementRegex);
@@ -127,13 +127,26 @@ class RobasParser {
         // }
         if (
             !this._isInConditional && !this._symbolTable[identifier] && 
-            !this._isInConditional && this._symbolTable[identifier] && !this._symbolTable[identifier].conditionalDeclaration
+            !this._isInConditional && this._symbolTable[identifier] && !this._symbolTable[identifier].conditionalDeclaration ||
+            !this._symbolTable[identifier]
         ) {
             throw new Error(`Variable '${identifier}' is not declared.`);
         }
 
         const expression = match[2];
-        const result = this.evaluateExpression(expression, this._symbolTable[identifier].dataType);
+        let result;
+
+        if (this.isInput(expression)) {
+            try {
+                result = await this.evaluateInput(expression);
+            }
+            catch (error) {
+                console.log("Error in input:", error);
+            }
+        }
+        else {
+            result = this.evaluateExpression(expression, this._symbolTable[identifier].dataType);
+        }
 
         this._symbolTable[identifier] = {
             ...this._symbolTable[identifier],
@@ -203,12 +216,12 @@ class RobasParser {
 
         switch (dataType) {
             case "int":
-                if (/^\d+$/.test(literal)) {
+                if (/^-?\d+$/.test(literal)) {
                     return parseInt(literal, 10); // Integer literal
                 }
                 throw new Error(`Invalid assignment: Expected an integer but got '${literal}'.`);
             case "float":
-                if (/^\d*\.\d+$/.test(literal)) {
+                if (/^-?\d*(\.\d+)?$/.test(literal)) {
                     return parseFloat(literal); // Float literal
                 }
                 throw new Error(`Invalid assignment: Expected a float but got '${literal}'.`);
@@ -309,13 +322,13 @@ class RobasParser {
 
         const result = await betterPrompt({
             title: 'Input needed',
-            subtitle: match[1],
+            label: match[1],
             type: 'input',
             height: 200,
             icon: "assets/icon.png",
             alwaysOnTop: true,
             customStylesheet: "prompt.css",
-        });
+        }, this._window);
 
         console.log("result", result);
         return result;
