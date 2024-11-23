@@ -4,7 +4,6 @@ const UndoRedojs = require("undoredo.js");
 
 window.addEventListener("DOMContentLoaded", () => {
     let settingsData;
-    let directoryPath = "";
 
     const elements = {
         title: document.querySelector('[document-name]'),
@@ -31,7 +30,6 @@ window.addEventListener("DOMContentLoaded", () => {
     };
 
     const handleDocumentChange = (filePath, content = "") => {
-        // elements.title.innerHTML = filePath.replace(/^.*[\\/]/, '');
         elements.title.value = path.parse(filePath).base;
         elements.title.style.fontStyle = "normal";
         elements.fileTextarea.removeAttribute("disabled");
