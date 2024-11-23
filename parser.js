@@ -1,4 +1,5 @@
 const { ipcMain, dialog } = require("electron");
+const betterPrompt = require("electron-prompt");
 
 class RobasParser {
     constructor(mainWindow) {
@@ -26,7 +27,8 @@ class RobasParser {
         if (match) {
             const dataType = match[1]; // e.g., int, float, string, bool
             const declarations = match[2].split(/\s*,\s*/); // Split multiple variable declarations
-            declarations.forEach(async declaration => {
+            
+            for (const declaration of declarations) {
                 const [identifier, literal] = declaration.split(/\s*=\s*/);
 
                 // Validate identifier syntax
@@ -37,6 +39,8 @@ class RobasParser {
                 // If literal exists, check if it matches the data type
                 const value = literal ? await this.parseLiteral(literal, dataType) : null;
                 // Store variable in the symbol table with or without assignment
+
+                console.log("niexit ???  ajdbedgfwsofjwef", value);
 
                 if (!this._isInConditional && this._symbolTable[identifier] && !this._symbolTable[identifier].conditionalDeclaration) {
                     // console.log(this._symbolTable);
@@ -56,7 +60,7 @@ class RobasParser {
                         conditionalDeclaration: this._conditionalDeclaration
                     };
                 }
-            });
+            };
         }
         else {
             this.parseStatement(line);
@@ -195,10 +199,8 @@ class RobasParser {
                 console.log("-------------skbskj");
             }
         }
-        // console.log("naa diri", this.isInput(literal));
-        // else if (this.isOutput(literal)) {
-        //     return this.evaluateExpression(literal, dataType);
-        // }
+
+        console.log("niproceed ://", literal);
 
         switch (dataType) {
             case "int":
@@ -306,67 +308,14 @@ class RobasParser {
             throw new Error("Error in extracting message in input.");
         }
 
-        // const response = window.prompt(match[1]);
-        // this._window.webContents.send("prompt-opened", match[1]);
-        // ipcMain.on("prompt-closed", (_, res) => {
-        //     return res;
-        // })
-        // return response;
-
-        let response; 
-        
-        // dialog.showMessageBox(this._window, {
-        //     type: 'question',
-        //     buttons: ['OK', 'Cancel'],
-        //     title: 'Input Needed',
-        //     message: match[1],
-        //     detail: 'This is your message prompt from the main process.',
-        //     noLink: true
-        // }).then(box => response = box.response).catch(error => {throw new Error(`Error here: ${error}`)});
-
-        const prompt = require("electron-prompt");
-
-        prompt({
-            title: 'Prompt example',
-            label: 'URL:',
-            value: 'http://example.org',
-            inputAttrs: {
-                type: 'text'
-            },
+        const result = await betterPrompt({
+            title: 'Select an Option',
+            subtitle: 'Please select an option',
             type: 'input'
-        })
-        .then((r) => {
-            if(r === null) {
-                console.log('user cancelled');
-            } else {
-                console.log('result', r);
-                response = r;
-                return response;
-            }
-        })
-        .catch(console.error);
+        });
 
-        // prompt({
-        //     title: "Input",
-        //     label: match[1],
-        //     type: "input",
-        //     inputAttrs: {
-        //         type: "text",
-        //         required: true
-        //     },
-        //     height: 200,
-        //     alwaysOnTop: true
-        // }).then((result) => {
-        //     // if (r === null) {
-        //     //     throw new Error("Input is required to proceed.");
-        //     // }
-
-        //     response = result;
-        // }).catch((error) => {
-        //     throw new Error(`Error occured during input: ${error}`);
-        // });
-
-        // console.log("res hereee", response);
+        console.log("result", result);
+        return result;
     }
 
     // Main function to parse the code
@@ -417,13 +366,11 @@ class RobasParser {
             else {
                 await this.parseVariableDeclaration(line);
             }
+
+            console.log("nahuman :(((")
         }
 
         console.log(this.symbolTable);
-
-        // lines.forEach(line => {
-        //     this.parseVariableDeclaration(line);
-        // });
     }
 }
 
