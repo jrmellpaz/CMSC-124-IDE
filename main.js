@@ -8,6 +8,7 @@ require("electron-reloader")(module);
 
 let mainWindow;
 let openedFilePath;
+let isSaved = false;
 const userDataPath = path.join(app.getAppPath(), "user_data.json");
 // "C:\\Users\\user\\Documents\\stratos\\user_data.json";
 
@@ -64,10 +65,24 @@ const createWindow = () => {
 
     mainWindow.webContents.on("did-finish-load", readData);
 
-    mainWindow.on("close", e => {
-        e.preventDefault();
-        console.log("window close prevented");
-        mainWindow.webContents.send("save-user-data");
+    mainWindow.on('close', (e) => { 
+        if (isSaved) {
+            mainWindow.webContents.send("save-user-data");
+        } else {
+            e.preventDefault();
+            dialog.showMessageBox({
+                type: 'warning',
+                buttons: ['Exit', 'Cancel'],
+                defaultId: 0,
+                title: 'Warning',
+                detail: 'Are you sure you want to exit without saving?'
+            }).then(({ response }) => {
+                if (response === 0) { // 'Exit' button
+                    mainWindow.destroy();
+                    app.quit();
+                }
+            });
+        }
     });
 };
 
@@ -111,6 +126,7 @@ const handleError = (message = "Sorry, something went wrong :(") => {
 };
 
 ipcMain.on("open-document-triggered", () => {
+
     dialog.showOpenDialog({
       	properties: ["openFile"],
       	filters: [
@@ -127,13 +143,14 @@ ipcMain.on("open-document-triggered", () => {
 			else {
 				app.addRecentDocument(filePath);
 				openedFilePath = filePath;
+                isSaved = false;
 				mainWindow.webContents.send("document-opened", { filePath, content });
 			}
 		});
     });
   });
-
-ipcMain.on("create-document-triggered", () => {
+  ipcMain.on("create-document-triggered", () => {
+    isSaved = false; 
     dialog.showSaveDialog(mainWindow, {
         filters: [
             { name: "text files", extensions: ["txt"] },
@@ -146,6 +163,7 @@ ipcMain.on("create-document-triggered", () => {
             } else {
 				app.addRecentDocument(filePath);
 				openedFilePath = filePath;
+                isSaved = true;
 				mainWindow.webContents.send("document-created", filePath);
             }
         });
@@ -174,9 +192,11 @@ ipcMain.on("save-document-triggered", (_, textareaContent) => {
 			else {
 				app.addRecentDocument(filePath);
 				openedFilePath = filePath; 
+                isSaved = true;
 				mainWindow.webContents.send("document-saved", filePath); 
 			}
 		});
+        
 	}).catch((err) => {
 			console.error("Error during save dialog:", err);
 			handleError(); 
@@ -184,6 +204,7 @@ ipcMain.on("save-document-triggered", (_, textareaContent) => {
 });
 
 ipcMain.on("file-content-updated", (_, textareaContent) => {
+    isSaved = false; 
     fs.writeFile(openedFilePath, textareaContent, (error) => {
 		if (error) {
 			handleError();
