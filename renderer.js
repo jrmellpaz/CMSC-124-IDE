@@ -244,11 +244,17 @@ window.addEventListener("DOMContentLoaded", () => {
     ipcRenderer.on("parser-finished", (_, output) => {
         displayOutput(output);
 
-        // COMPILING HERE
+        // TODO: COMPILING HERE
     });
 
     elements.compile.addEventListener("click", () => {
         saveFile();
         parseCode();
+    });
+
+    // Prompt window
+    ipcRenderer.on("prompt-opened", (_, message) => {
+        const response = prompt(message);
+        ipcRenderer.send("prompt-closed", response);
     });
 });

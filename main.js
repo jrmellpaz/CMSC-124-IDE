@@ -73,13 +73,13 @@ const createWindow = () => {
 
 app.whenReady().then(createWindow);
 
-ipcMain.on("start-parser", (_, fileContent) => {
-    const parser = new RobasParser();
+ipcMain.on("start-parser", async (_, fileContent) => {
+    const parser = new RobasParser(mainWindow);
     let output;
     const lines = fileContent.split('\n').map(line => line.trim()).filter(line => line.length > 0);
 
     try {
-        parser.parse(lines);
+        await parser.parse(lines);
         output = "Parsing successful!\n" + JSON.stringify(parser.symbolTable);
     }
     catch (e) {
@@ -113,7 +113,10 @@ const handleError = (message = "Sorry, something went wrong :(") => {
 ipcMain.on("open-document-triggered", () => {
     dialog.showOpenDialog({
       	properties: ["openFile"],
-      	filters: [{ name: "text files", extensions: ["txt"] }],
+      	filters: [
+            { name: "text files", extensions: ["txt"] },
+            { name: "robas files", extensions: ["rbs"] }
+        ],
     }).then(({ filePaths }) => {
       	const filePath = filePaths[0];
   

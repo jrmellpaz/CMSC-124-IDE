@@ -1,9 +1,12 @@
+const { ipcMain, dialog } = require("electron");
+
 class RobasParser {
-    constructor() {
+    constructor(mainWindow) {
         this._symbolTable = {};
         this._statements = [];
         this._conditionalDeclaration = false;
         this._isInConditional = false;
+        this._window = mainWindow;
     }
 
     get symbolTable() {
@@ -15,7 +18,7 @@ class RobasParser {
     }
 
     // Regular expression for matching "var <data type> <identifier>"
-    parseVariableDeclaration(line) {
+    async parseVariableDeclaration(line) {
         // Match "var <data type> <identifier>, <identifier> = <literal>;"
         const varDeclRegex = /var\s+([a-zA-Z_]\w*)\s+([a-zA-Z_]\w*(?:\s*=\s*[^,;]+)?(?:\s*,\s*[a-zA-Z_]\w*(?:\s*=\s*[^,;]+)?)*)\s*;/;
         const match = line.match(varDeclRegex);
@@ -23,7 +26,7 @@ class RobasParser {
         if (match) {
             const dataType = match[1]; // e.g., int, float, string, bool
             const declarations = match[2].split(/\s*,\s*/); // Split multiple variable declarations
-            declarations.forEach(declaration => {
+            declarations.forEach(async declaration => {
                 const [identifier, literal] = declaration.split(/\s*=\s*/);
 
                 // Validate identifier syntax
@@ -32,7 +35,7 @@ class RobasParser {
                 }
 
                 // If literal exists, check if it matches the data type
-                const value = literal ? this.parseLiteral(literal, dataType) : null;
+                const value = literal ? await this.parseLiteral(literal, dataType) : null;
                 // Store variable in the symbol table with or without assignment
 
                 if (!this._isInConditional && this._symbolTable[identifier] && !this._symbolTable[identifier].conditionalDeclaration) {
@@ -60,7 +63,7 @@ class RobasParser {
         }
     }
 
-    parseStatements(lines) {
+    async parseStatements(lines) {
         console.log("lines here", lines);
         const statements = [];
         let currentStatement = "";
@@ -99,9 +102,9 @@ class RobasParser {
         });
 
         console.log("here!!!!", statements);
-        statements.filter(statement => statement.length > 0).forEach(statement => {
+        statements.filter(statement => statement.length > 0).forEach(async statement => {
             this._conditionalDeclaration = true;
-            this.parseVariableDeclaration(statement);
+            await this.parseVariableDeclaration(statement);
         });
     }
 
@@ -177,12 +180,25 @@ class RobasParser {
     }
 
     // Helper function to parse literals with type checking
-    parseLiteral(literal, dataType) {
+    async parseLiteral(literal, dataType) {
         literal = literal.trim();
 
         if (this.isArithmeticExpression(literal)) {
             return this.evaluateExpression(literal, dataType);
         }
+        else if (this.isInput(literal)) { // input
+            try {
+                literal = await this.evaluateInput(literal);
+                console.log("here??/");
+            }
+            catch (error) {
+                console.log("-------------skbskj");
+            }
+        }
+        // console.log("naa diri", this.isInput(literal));
+        // else if (this.isOutput(literal)) {
+        //     return this.evaluateExpression(literal, dataType);
+        // }
 
         switch (dataType) {
             case "int":
@@ -211,8 +227,17 @@ class RobasParser {
     }
 
     isArithmeticExpression(expression) {
+        console.log("exp", expression);
         return /[+\-*/%]|&&|\|\|/.test(expression);
     }
+
+    isInput(expression) {
+        return /^\s*input\s*:\s*"(.*)"\s*$/.test(expression);
+    }
+
+    // isOutput(expression) {
+    //     return;
+    // }
 
     evaluateExpression(expression, dataType) {
         const sanitizedExpression = expression.replace(/([a-zA-Z_]\w*)|(".*?")/g, (match) => {
@@ -272,8 +297,80 @@ class RobasParser {
 
         return result;
     }
+
+    async evaluateInput(input) {
+        const inputRegex = /^\s*input\s*:\s*"(.*)"\s*$/;
+        const match = input.match(inputRegex);
+
+        if (!match[1]) {
+            throw new Error("Error in extracting message in input.");
+        }
+
+        // const response = window.prompt(match[1]);
+        // this._window.webContents.send("prompt-opened", match[1]);
+        // ipcMain.on("prompt-closed", (_, res) => {
+        //     return res;
+        // })
+        // return response;
+
+        let response; 
+        
+        // dialog.showMessageBox(this._window, {
+        //     type: 'question',
+        //     buttons: ['OK', 'Cancel'],
+        //     title: 'Input Needed',
+        //     message: match[1],
+        //     detail: 'This is your message prompt from the main process.',
+        //     noLink: true
+        // }).then(box => response = box.response).catch(error => {throw new Error(`Error here: ${error}`)});
+
+        const prompt = require("electron-prompt");
+
+        prompt({
+            title: 'Prompt example',
+            label: 'URL:',
+            value: 'http://example.org',
+            inputAttrs: {
+                type: 'text'
+            },
+            type: 'input'
+        })
+        .then((r) => {
+            if(r === null) {
+                console.log('user cancelled');
+            } else {
+                console.log('result', r);
+                response = r;
+                return response;
+            }
+        })
+        .catch(console.error);
+
+        // prompt({
+        //     title: "Input",
+        //     label: match[1],
+        //     type: "input",
+        //     inputAttrs: {
+        //         type: "text",
+        //         required: true
+        //     },
+        //     height: 200,
+        //     alwaysOnTop: true
+        // }).then((result) => {
+        //     // if (r === null) {
+        //     //     throw new Error("Input is required to proceed.");
+        //     // }
+
+        //     response = result;
+        // }).catch((error) => {
+        //     throw new Error(`Error occured during input: ${error}`);
+        // });
+
+        // console.log("res hereee", response);
+    }
+
     // Main function to parse the code
-    parse(code) {
+    async parse(code) {
         const lines = code.map(line => line.trim()).filter(line => line.length > 0);
         let enteredIf = false;
 
@@ -302,7 +399,7 @@ class RobasParser {
                     }
 
                     console.log("blockElse:", block);
-                    this.parseStatements(block);
+                    await this.parseStatements(block);
                     enteredIf = false;
                 }
                 else {
@@ -310,7 +407,7 @@ class RobasParser {
                     const isConditionTrue = this.evaluateExpression(condition, "bool");
                     if (isConditionTrue) {
                         enteredIf = true;
-                        this.parseStatements(block);
+                        await this.parseStatements(block);
                     }
                 }
 
@@ -318,7 +415,7 @@ class RobasParser {
                 this._conditionalDeclaration = false;
             }
             else {
-                this.parseVariableDeclaration(line);
+                await this.parseVariableDeclaration(line);
             }
         }
 
