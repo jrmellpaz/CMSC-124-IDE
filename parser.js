@@ -131,7 +131,7 @@ class RobasParser {
         ) {
             throw new Error(`Variable '${identifier}' is not declared.`);
         }
-        console.log("bananananannna");
+
         const expression = match[2];
         const result = this.evaluateExpression(expression, this._symbolTable[identifier].dataType);
 
@@ -193,10 +193,9 @@ class RobasParser {
         else if (this.isInput(literal)) { // input
             try {
                 literal = await this.evaluateInput(literal);
-                console.log("here??/");
             }
             catch (error) {
-                console.log("-------------skbskj");
+                console.log("Error in input:", error);
             }
         }
 
@@ -309,9 +308,13 @@ class RobasParser {
         }
 
         const result = await betterPrompt({
-            title: 'Select an Option',
-            subtitle: 'Please select an option',
-            type: 'input'
+            title: 'Input needed',
+            subtitle: match[1],
+            type: 'input',
+            height: 200,
+            icon: "assets/icon.png",
+            alwaysOnTop: true,
+            customStylesheet: "prompt.css",
         });
 
         console.log("result", result);

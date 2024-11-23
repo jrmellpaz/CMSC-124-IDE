@@ -1,0 +1,46 @@
+:root {
+    --blue1: #213A57; /* border */
+    --blue2: #112A47; /* text editor bg */
+    --blue3: #011936; /* menu bar */
+    --text1: #8CBCB9; /* selected file title and highlight */
+    --text2: #A4B2B5; /* text editor */
+    --text3: #415A77; /* number sa kilid */
+    --main-font: Product Sans, sans-serif;
+    --editor-font: Space Grotesk;
+}
+
+body {
+    padding: 0;
+    margin: 0;
+    background-color: var(--blue3);
+    height: 100dvh;
+    width: 100dvw;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    font-family: var(--main-font);
+    color: var(--text2);
+}
+
+button {
+    background-color: var(--blue2);
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    font-family: var(--main-font);
+    color: var(--text2);
+}
+
+input {
+    background-color: var(--blue2);
+    border: 1px solid var(--blue3);
+    outline: none;
+    border-radius: 100px;
+    height: 32px;
+    font-family: var(--main-font);
+    color: var(--blue3);
+    font-weight: bold;
+    font-size: medium;
+    padding: 0.25em 0.75em;
+}

@@ -8,7 +8,7 @@ require("electron-reloader")(module);
 
 let mainWindow;
 let openedFilePath;
-let isSaved = false;
+let isSaved = true;
 const userDataPath = path.join(app.getAppPath(), "user_data.json");
 // "C:\\Users\\user\\Documents\\stratos\\user_data.json";
 
@@ -151,25 +151,30 @@ ipcMain.on("open-document-triggered", () => {
     }).then(({ filePaths }) => {
       	const filePath = filePaths[0];
   
-		fs.readFile(filePath, "utf8", (error, content) => {
-			if (error) {
-				handleError();
-			} 
-			else {
-				app.addRecentDocument(filePath);
-				openedFilePath = filePath;
-                isSaved = false;
-				mainWindow.webContents.send("document-opened", { filePath, content });
-			}
-		});
+        try {
+            fs.readFile(filePath, "utf8", (error, content) => {
+                if (error) {
+                    handleError();
+                } 
+                else {
+                    app.addRecentDocument(filePath);
+                    openedFilePath = filePath;
+                    mainWindow.webContents.send("document-opened", { filePath, content });
+                }
+            });
+        }
+        catch (error) {
+            console.log("open-document-triggered error:", error);
+        }
     });
-  });
-  ipcMain.on("create-document-triggered", () => {
+});
+
+ipcMain.on("create-document-triggered", () => {
     isSaved = false; 
     dialog.showSaveDialog(mainWindow, {
         filters: [
+            { name: "robas files", extensions: ["rbs"] },
             { name: "text files", extensions: ["txt"] },
-            { name: "robas files", extensions: ["rbs"] }
         ]
     }).then(({ filePath }) => {
         fs.writeFile(filePath, "", (error) => {
