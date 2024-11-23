@@ -1,7 +1,6 @@
 const { ipcRenderer, clipboard } = require("electron");
 const path = require("path");       
 const UndoRedojs = require("undoredo.js");
-// const RobasParser = require("./parser.ts");
 
 window.addEventListener("DOMContentLoaded", () => {
     let settingsData;
