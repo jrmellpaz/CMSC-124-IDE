@@ -79,6 +79,8 @@ window.addEventListener("DOMContentLoaded", () => {
         if(elements.autoSave.checked) {
             ipcRenderer.send("file-content-updated", e.target.value);
         }
+
+        ipcRenderer.send("update-file-status");
     });
 
     // Creating a new file

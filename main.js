@@ -104,7 +104,7 @@ ipcMain.on("start-parser", async (_, fileContent) => {
     mainWindow.webContents.send("parser-finished", output);
 });
 
-ipcMain.on("close-app", (_, settingsData) => {
+ipcMain.on("close-app", (e, settingsData) => {
     const data = JSON.stringify(settingsData);
     console.log("data", data)
     fs.writeFile(userDataPath, data, (error) => {
@@ -116,6 +116,22 @@ ipcMain.on("close-app", (_, settingsData) => {
             app.exit();
         }
     });
+
+    if (!isSaved) {
+        e.preventDefault();
+        dialog.showMessageBox({
+            type: 'warning',
+            buttons: ['Exit', 'Cancel'],
+            defaultId: 0,
+            title: 'Warning',
+            detail: 'Are you sure you want to exit without saving?'
+        }).then(({ response }) => {
+            if (response === 0) { // 'Exit' button
+                mainWindow.destroy();
+                app.quit();
+            }
+        });
+    }
 });
 
 const handleError = (message = "Sorry, something went wrong :(") => {
@@ -126,12 +142,11 @@ const handleError = (message = "Sorry, something went wrong :(") => {
 };
 
 ipcMain.on("open-document-triggered", () => {
-
     dialog.showOpenDialog({
       	properties: ["openFile"],
       	filters: [
+            { name: "robas files", extensions: ["rbs"] },
             { name: "text files", extensions: ["txt"] },
-            { name: "robas files", extensions: ["rbs"] }
         ],
     }).then(({ filePaths }) => {
       	const filePath = filePaths[0];
@@ -175,8 +190,8 @@ ipcMain.on("save-document-triggered", (_, textareaContent) => {
 		title: "Save As", 
 		defaultPath: openedFilePath || "untitled.txt", // If the file was already opened, use that path, otherwise provide a default file name
 		filters: [
+			{ name: "Robas Files", extensions: ["rbs"] },
 			{ name: "Text Files", extensions: ["txt"] },
-			{ name: "Robas Files", extensions: ["rbs"] }
 		]
 	}).then(({ filePath }) => {
 		if (!filePath) {
@@ -204,10 +219,14 @@ ipcMain.on("save-document-triggered", (_, textareaContent) => {
 });
 
 ipcMain.on("file-content-updated", (_, textareaContent) => {
-    isSaved = false; 
+    isSaved = true; 
     fs.writeFile(openedFilePath, textareaContent, (error) => {
 		if (error) {
 			handleError();
 		}
     });
+});
+
+ipcMain.on("update-file-status", () => {
+    isSaved = false;
 });
