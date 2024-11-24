@@ -60,6 +60,8 @@ class RobasParser {
                         conditionalDeclaration: this._conditionalDeclaration
                     };
                 }
+
+                this._statements.push(line);
             };
         }
         else {
@@ -266,7 +268,6 @@ class RobasParser {
     }
 
     isArithmeticExpression(expression) {
-        console.log("exp", expression);
         return /[+\-*/%]|&&|\|\|/.test(expression);
     }
 
@@ -366,7 +367,7 @@ class RobasParser {
             alwaysOnTop: true,
             customStylesheet: "prompt.css",
         }, this._window);
-        
+
         return result;
     }
 
@@ -422,7 +423,8 @@ class RobasParser {
             console.log("nahuman :(((")
         }
 
-        console.log(this.symbolTable);
+        console.log("table:", this.symbolTable);
+        console.log("statements:", this.statements);
     }
 }
 
