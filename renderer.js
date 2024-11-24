@@ -233,7 +233,7 @@ window.addEventListener("DOMContentLoaded", () => {
     // Compile
     const displayOutput = (output) => {
         const textarea = elements.terminalTextarea;
-        textarea.textContent = output;
+        textarea.textContent += "\n" + output;
     }
 
     const parseCode = () => {
@@ -251,9 +251,8 @@ window.addEventListener("DOMContentLoaded", () => {
         parseCode();
     });
 
-    // Prompt window
-    ipcRenderer.on("prompt-opened", (_, message) => {
-        const response = prompt(message);
-        ipcRenderer.send("prompt-closed", response);
+    // Output terminal
+    ipcRenderer.on("terminal-output", (_, output) => {
+        displayOutput(output);
     });
 });

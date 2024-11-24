@@ -114,47 +114,72 @@ class RobasParser {
 
     async parseStatement(line) {
         console.log("line-----", line);
-        const statementRegex = /^([a-zA-Z_]\w*)\s*=\s*(.+)\s*;$/;
-        const match = line.match(statementRegex);
 
-        if (!match) {
-            throw new Error(`Invalid syntax for statement: '${line}'.`);
-        }
+        if (this.isOutput(line)) {
+            const outputRegex = /^output:\s*"(.*)";$/;
+            const match = line.match(outputRegex);
 
-        const identifier = match[1];
-        // if (!this._symbolTable[identifier]) {
-        //     throw new Error(`Variable '${identifier}' is not declared.`);
-        // }
-        if (
-            !this._isInConditional && !this._symbolTable[identifier] && 
-            !this._isInConditional && this._symbolTable[identifier] && !this._symbolTable[identifier].conditionalDeclaration ||
-            !this._symbolTable[identifier]
-        ) {
-            throw new Error(`Variable '${identifier}' is not declared.`);
-        }
-
-        const expression = match[2];
-        let result;
-
-        if (this.isInput(expression)) {
-            try {
-                result = await this.evaluateInput(expression);
+            if (!match[1]) {
+                throw new Error("Error in extracting message in output.");
             }
-            catch (error) {
-                console.log("Error in input:", error);
-            }
+
+            let message = match[1];
+
+            const variableRegex = /\{([a-zA-Z_]\w*)\}/g;
+            message = message.replace(variableRegex, (match, identifier) => {
+                if (!this._symbolTable[identifier]) {
+                    throw new Error(`Variable '${identifier}' is not declared.`);
+                }
+
+                return this._symbolTable[identifier].value;
+            });
+
+            this._window.webContents.send("terminal-output", message);
+            this._statements.push(line);
         }
         else {
-            result = this.evaluateExpression(expression, this._symbolTable[identifier].dataType);
-        }
+            const statementRegex = /^([a-zA-Z_]\w*)\s*=\s*(.+)\s*;$/;
+            const match = line.match(statementRegex);
 
-        this._symbolTable[identifier] = {
-            ...this._symbolTable[identifier],
-            value: result,
-            conditionalDeclaration: this._conditionalDeclaration
-        }
+            if (!match) {
+                throw new Error(`Invalid syntax for statement: '${line}'.`);
+            }
 
-        this._statements.push(line);
+            const identifier = match[1];
+            // if (!this._symbolTable[identifier]) {
+            //     throw new Error(`Variable '${identifier}' is not declared.`);
+            // }
+            if (
+                !this._isInConditional && !this._symbolTable[identifier] && 
+                !this._isInConditional && this._symbolTable[identifier] && !this._symbolTable[identifier].conditionalDeclaration ||
+                !this._symbolTable[identifier]
+            ) {
+                throw new Error(`Variable '${identifier}' is not declared.`);
+            }
+
+            const expression = match[2];
+            let result;
+
+            if (this.isInput(expression)) {
+                try {
+                    result = await this.evaluateInput(expression);
+                }
+                catch (error) {
+                    console.log("Error in input:", error);
+                }
+            }
+            else {
+                result = this.evaluateExpression(expression, this._symbolTable[identifier].dataType);
+            }
+
+            this._symbolTable[identifier] = {
+                ...this._symbolTable[identifier],
+                value: result,
+                conditionalDeclaration: this._conditionalDeclaration
+            }
+
+            this._statements.push(line);
+        }
     }
 
     parseConditionalBlock(lines, currentIndex) {
@@ -249,9 +274,9 @@ class RobasParser {
         return /^\s*input\s*:\s*"(.*)"\s*$/.test(expression);
     }
 
-    // isOutput(expression) {
-    //     return;
-    // }
+    isOutput(expression) {
+        return /^output:\s*"(.*)";$/.test(expression);
+    }
 
     evaluateExpression(expression, dataType) {
         const sanitizedExpression = expression.replace(/([a-zA-Z_]\w*)|(".*?")/g, (match) => {
@@ -320,17 +345,28 @@ class RobasParser {
             throw new Error("Error in extracting message in input.");
         }
 
+        let message = match[1];
+
+        message = message.replace(/\{([a-zA-Z_]\w*)\}/g, (match, identifier) => {
+            if (!this._symbolTable[identifier]) {
+                throw new Error(`Variable '${identifier}' is not declared.`);
+            }
+
+            console.log("identifier", identifier, "\n", this._symbolTable[identifier]);
+
+            return this._symbolTable[identifier].value;
+        });
+
         const result = await betterPrompt({
             title: 'Input needed',
-            label: match[1],
+            label: message,
             type: 'input',
             height: 200,
             icon: "assets/icon.png",
             alwaysOnTop: true,
             customStylesheet: "prompt.css",
         }, this._window);
-
-        console.log("result", result);
+        
         return result;
     }
 
