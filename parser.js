@@ -253,6 +253,7 @@ class RobasParser {
                 }
                 throw new Error(`Invalid assignment: Expected a float but got '${literal}'.`);
             case "string":
+                literal = "\"" + literal + "\""; 
                 if (/^".*"$/.test(literal)) {
                     return literal.slice(1, -1); // String literal, remove the surrounding quotes
                 }
