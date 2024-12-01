@@ -60,8 +60,6 @@ window.addEventListener("DOMContentLoaded", () => {
         settingsData = parsedData;
         directoryPath = String(directoryPath);
 
-        console.log("path:", directoryPath);
-
         elements.autoSave.checked = (settingsData.preferences.autoSave === "false") ? false : true;
     });
 

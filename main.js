@@ -95,7 +95,7 @@ ipcMain.on("start-parser", async (_, fileContent) => {
 
     try {
         await parser.parse(lines);
-        output = "Parsing successful!\n" + JSON.stringify(parser.symbolTable);
+        output = "Parsing successful!\n" + JSON.stringify(parser.symbolTable) + "\n" + JSON.stringify(parser.statements);
     }
     catch (e) {
         output = `Parsing failed: ${e.message}`;
