@@ -1,16 +1,22 @@
-const { ipcMain, dialog } = require("electron");
+const { ipcMain, dialog } = require("electron"); //lines are passed here
 const betterPrompt = require("electron-prompt");
 
 class RobasParser {
     constructor(mainWindow) {
-        this._symbolTable = {};
-        this._statements = [];
+        this._symbolTable = {}; //table
+        this._statements = []; //array
+        this._ast = [];
         this._conditionalDeclaration = false;
         this._isInConditional = false;
         this._window = mainWindow;
     }
 
-    get symbolTable() {
+    get ast() {
+        return this._ast;
+    }
+
+
+    get symbolTable() { 
         return this._symbolTable;
     }
 
@@ -18,59 +24,38 @@ class RobasParser {
         return this._statements;
     }
 
-    // Regular expression for matching "var <data type> <identifier>"
     async parseVariableDeclaration(line) {
-        // Match "var <data type> <identifier>, <identifier> = <literal>;"
         const varDeclRegex = /var\s+([a-zA-Z_]\w*)\s+([a-zA-Z_]\w*(?:\s*=\s*[^,;]+)?(?:\s*,\s*[a-zA-Z_]\w*(?:\s*=\s*[^,;]+)?)*)\s*;/;
         const match = line.match(varDeclRegex);
 
+        console.log("match po: ", match)
         if (match) {
-            const dataType = match[1]; // e.g., int, float, string, bool
-            const declarations = match[2].split(/\s*,\s*/); // Split multiple variable declarations
-            
+            const dataType = match[1];
+            const declarations = match[2].split(/\s*,\s*/);
+
             for (const declaration of declarations) {
                 const [identifier, literal] = declaration.split(/\s*=\s*/);
 
-                // Validate identifier syntax
-                if (!this.isValidIdentifier(identifier)) {
-                    throw new Error(`Invalid identifier name: '${identifier}'.`);
-                }
-
-                // If literal exists, check if it matches the data type
                 const value = literal ? await this.parseLiteral(literal, dataType) : null;
-                // Store variable in the symbol table with or without assignment
+                console.log("value is: ", value)
+                this._ast.push({
+                    type: "var_decl",
+                    dataType,
+                    identifier,
+                    value,
+                });
 
-                console.log("niexit ???  ajdbedgfwsofjwef", value);
-
-                if (!this._isInConditional && this._symbolTable[identifier] && !this._symbolTable[identifier].conditionalDeclaration) {
-                    // console.log(this._symbolTable);
-                    throw new Error(`Variable '${identifier}' is already declared: ${line}.`);
-                }
-                else if (!this._isInConditional && this._symbolTable[identifier] && !this._symbolTable[identifier].conditionalDeclaration) {
-                    this._symbolTable[identifier] = {
-                        ...this._symbolTable[identifier], 
-                        value: literal,
-                        conditionalDeclaration: true
-                    } 
-                }
-                else {
-                    this._symbolTable[identifier] = {
-                        dataType,
-                        value,
-                        conditionalDeclaration: this._conditionalDeclaration
-                    };
-                }
-
+                this._symbolTable[identifier] = { dataType, value };
                 this._statements.push(line);
-            };
-        }
-        else {
+            }
+        } else {
             await this.parseStatement(line);
         }
     }
 
+
     async parseStatements(lines) {
-        console.log("lines here", lines);
+        console.log("lines here", lines); 
         const statements = [];
         let currentStatement = "";
         let braceCount = 0;
@@ -115,74 +100,32 @@ class RobasParser {
     }
 
     async parseStatement(line) {
-        console.log("line-----", line);
-
+        console.log("line code: ", line); 
         if (this.isOutput(line)) {
             const outputRegex = /^output:\s*"(.*)";$/;
             const match = line.match(outputRegex);
+            const message = match[1];
 
-            if (!match[1]) {
-                throw new Error("Error in extracting message in output.");
-            }
+            this._ast.push({ type: "output", message });
 
-            let message = match[1];
-
-            const variableRegex = /\{([a-zA-Z_]\w*)\}/g;
-            message = message.replace(variableRegex, (match, identifier) => {
-                if (!this._symbolTable[identifier]) {
-                    throw new Error(`Variable '${identifier}' is not declared.`);
-                }
-
-                return this._symbolTable[identifier].value;
-            });
-
-            this._window.webContents.send("terminal-output", message);
             this._statements.push(line);
-        }
-        else {
+        } else {
             const statementRegex = /^([a-zA-Z_]\w*)\s*=\s*(.+)\s*;$/;
             const match = line.match(statementRegex);
 
-            if (!match) {
-                throw new Error(`Invalid syntax for statement: '${line}'.`);
-            }
+            if (match) {
+                const identifier = match[1];
+                const expression = match[2];
+                const value = this.evaluateExpression(expression, this._symbolTable[identifier].dataType);
 
-            const identifier = match[1];
-            // if (!this._symbolTable[identifier]) {
-            //     throw new Error(`Variable '${identifier}' is not declared.`);
-            // }
-            if (
-                !this._isInConditional && !this._symbolTable[identifier] && 
-                !this._isInConditional && this._symbolTable[identifier] && !this._symbolTable[identifier].conditionalDeclaration ||
-                !this._symbolTable[identifier]
-            ) {
-                throw new Error(`Variable '${identifier}' is not declared.`);
-            }
+                this._ast.push({ type: "assignment", identifier, expression });
 
-            const expression = match[2];
-            let result;
-
-            if (this.isInput(expression)) {
-                try {
-                    result = await this.evaluateInput(expression);
-                }
-                catch (error) {
-                    console.log("Error in input:", error);
-                }
+                this._symbolTable[identifier].value = value;
+                this._statements.push(line);
             }
-            else {
-                result = this.evaluateExpression(expression, this._symbolTable[identifier].dataType);
-            }
-
-            this._symbolTable[identifier] = {
-                ...this._symbolTable[identifier],
-                value: result,
-                conditionalDeclaration: this._conditionalDeclaration
-            }
-
-            this._statements.push(line);
         }
     }
+
 
     parseConditionalBlock(lines, currentIndex) {
         let block = "";
@@ -228,6 +171,7 @@ class RobasParser {
         literal = literal.trim();
 
         if (this.isArithmeticExpression(literal)) {
+            console.log("arithmetic"); 
             return this.evaluateExpression(literal, dataType);
         }
         else if (this.isInput(literal)) { // input
@@ -253,7 +197,7 @@ class RobasParser {
                 }
                 throw new Error(`Invalid assignment: Expected a float but got '${literal}'.`);
             case "string":
-                literal = "\"" + literal + "\"";
+                literal = "\"" + literal + "\""; 
                 if (/^".*"$/.test(literal)) {
                     return literal.slice(1, -1); // String literal, remove the surrounding quotes
                 }
@@ -314,7 +258,7 @@ class RobasParser {
         let result;
 
         try {
-            result = eval(sanitizedExpression);
+            result = eval(sanitizedExpression); // Evaluate the arithmetic expression, this is where the operataion
         }
         catch (error) {
             throw new Error(`Error evaluating expression: ${expression}.`);
@@ -418,6 +362,7 @@ class RobasParser {
                 this._conditionalDeclaration = false;
             }
             else {
+                console.log("here po")
                 await this.parseVariableDeclaration(line);
             }
 

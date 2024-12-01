@@ -2,6 +2,8 @@ const { BrowserWindow, app, ipcMain, dialog, Notification} = require("electron")
 const path = require("path");
 const fs = require("fs");
 const RobasParser = require("./parser.js");
+const MIPSGenerator = require('./mips_generator.js');
+console.log('MIPSGenerator:', MIPSGenerator);
 
 // Electron reloader
 require("electron-reloader")(module);
@@ -90,19 +92,37 @@ app.whenReady().then(createWindow);
 
 ipcMain.on("start-parser", async (_, fileContent) => {
     const parser = new RobasParser(mainWindow);
-    let output;
     const lines = fileContent.split('\n').map(line => line.trim()).filter(line => line.length > 0);
 
     try {
-        await parser.parse(lines);
-        output = "Parsing successful!\n" + JSON.stringify(parser.symbolTable) + "\n" + JSON.stringify(parser.statements);
-    }
-    catch (e) {
-        output = `Parsing failed: ${e.message}`;
-    }
+        console.log('Starting Parsing...');
+        await parser.parse(lines); // Generate symbol table and AST
+        const ast = parser.ast; // Get the AST from the parser
 
-    mainWindow.webContents.send("parser-finished", output);
+        console.log('AST:', ast); // Debugging log to confirm AST
+        console.log('Generated AST:', JSON.stringify(ast, null, 2)); // Log the AST from the parser
+        
+        // Pass AST to the MIPS generator
+        const MIPSGenerator = require('./mips_generator.js');
+        const generator = new MIPSGenerator(ast);
+        generator.generate();
+
+        const mipsCode = generator.getFullCode(); // Get the MIPS code
+        console.log('Generated MIPS Code:', mipsCode); // Debugging log to confirm MIPS code generation
+
+        //uncomment for .asm file 
+        // const outputFilePath = 'program.asm';
+        // fs.writeFileSync(outputFilePath, mipsCode);
+        // console.log(`MIPS code has been written to ${outputFilePath}`);
+
+
+        mainWindow.webContents.send("parser-finished", mipsCode); // Send MIPS code to UI
+    } catch (e) {
+        mainWindow.webContents.send("parser-finished", `Parsing failed: ${e.message}`);
+    }
 });
+
+
 
 ipcMain.on("close-app", (e, settingsData) => {
     const data = JSON.stringify(settingsData);
