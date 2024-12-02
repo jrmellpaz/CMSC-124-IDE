@@ -4,6 +4,10 @@ const UndoRedojs = require("undoredo.js");
 
 window.addEventListener("DOMContentLoaded", () => {
     let settingsData;
+    let run = {
+        compile: false,
+        execute: false
+    }
 
     const elements = {
         title: document.querySelector('[document-name]'),
@@ -59,6 +63,8 @@ window.addEventListener("DOMContentLoaded", () => {
     ipcRenderer.on("read-data", (_, {parsedData, directoryPath}) => {
         settingsData = parsedData;
         directoryPath = String(directoryPath);
+
+        console.log("path:", directoryPath);
 
         elements.autoSave.checked = (settingsData.preferences.autoSave === "false") ? false : true;
     });
@@ -238,16 +244,26 @@ window.addEventListener("DOMContentLoaded", () => {
         ipcRenderer.send("start-parser", elements.fileTextarea.value);
     }
 
-    ipcRenderer.on("parser-finished", (_, output) => {
-        displayOutput(output);
-
-        // TODO: COMPILING HERE
+    ipcRenderer.on("parser-finished", (_, { output, statements }) => {
+        if (run.execute) {
+            displayOutput(output);
+            ipcRenderer.send("execute-code", { statements, title: elements.title.value });
+        }
     });
 
     elements.compile.addEventListener("click", () => {
+        run.compile = true;
+        run.execute = false;
         saveFile();
         parseCode();
     });
+
+    elements.execute.addEventListener("click", () => {
+        run.execute = true;
+        run.compile = false;
+        saveFile();
+        parseCode();
+    })
 
     // Output terminal
     ipcRenderer.on("terminal-output", (_, output) => {
