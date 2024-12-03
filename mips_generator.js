@@ -47,6 +47,13 @@ class MIPSGenerator {
         else if (statement.dataType === "string") {
             this.dataSection += `${identifier}: .asciiz ${statement.value}\n`;
         }
+        else if (statement.dataType === "bool") {
+            const register = `$t${this.registerCount++}`;
+            this.registers[identifier] = register;
+
+            const value = statement.value ? 1 : 0;
+            this.code += `li ${register}, ${value}\n`;
+        }
     }
 
     handleAssignment(statement, identifier) {
@@ -60,6 +67,11 @@ class MIPSGenerator {
         }
         else if (statement.dataType === "string") {
             this.dataSection += `${identifier}: .asciiz ${statement.value}\n`;
+        }
+        else if (statement.dataType === "bool") {
+            const register = this.registers[identifier];
+            const value = statement.value ? 1 : 0;
+            this.code += `li ${register}, ${value}\n`;
         }
     }
 
