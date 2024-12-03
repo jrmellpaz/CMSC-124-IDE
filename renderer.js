@@ -250,23 +250,34 @@ window.addEventListener("DOMContentLoaded", () => {
             ipcRenderer.send("execute-code", { statements, title: elements.title.value });
         }
     });
-
+    
     elements.compile.addEventListener("click", () => {
         run.compile = true;
         run.execute = false;
         saveFile();
         parseCode();
     });
-
+    
     elements.execute.addEventListener("click", () => {
         run.execute = true;
         run.compile = false;
         saveFile();
         parseCode();
     })
-
-    // Output terminal
-    ipcRenderer.on("terminal-output", (_, output) => {
+    
+    ipcRenderer.on('mars-output', (_, output) => {
+        console.log(output);
         displayOutput(output);
+        // const outputDiv = document.getElementById('output');
+        // outputDiv.textContent = output;
     });
+    // // Output terminal
+    // ipcRenderer.on("terminal-output", (_, output) => {
+    //     displayOutput(output);
+    // });
 });
+
+// document.getElementById('Execute File').addEventListener('click', () => {
+//     const asmFilePath = 'path/to/output.asm';
+//     ipcRenderer.send('execute-mars', asmFilePath);
+// });

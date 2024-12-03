@@ -3,6 +3,7 @@ const path = require("path");
 const fs = require("fs");
 const RobasParser = require("./parser.js");
 const MIPSGenerator = require("./mips_generator.js");
+const { runMars } = require("./marsRunner");
 
 // Electron reloader
 require("electron-reloader")(module);
@@ -93,7 +94,7 @@ ipcMain.on("start-parser", async (_, fileContent) => {
     const parser = new RobasParser(mainWindow);
     let output;
     const lines = fileContent.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-
+    
     try {
         await parser.parse(lines);
         output = "Parsing successful!\n" + JSON.stringify(parser.symbolTable);
@@ -101,14 +102,14 @@ ipcMain.on("start-parser", async (_, fileContent) => {
     catch (e) {
         output = `Parsing failed: ${e.message}`;
     }
-
+    
     mainWindow.webContents.send("parser-finished", { output, statements: parser.statements });
 });
 
-ipcMain.on("execute-code", (_, { statements, title }) => {
+ipcMain.on("execute-code", async (_, { statements, title }) => {
     const generator = new MIPSGenerator(statements);
     const mipsCode = generator.generateMIPS();
-
+    
     const fileName = `${title.replace(/\.rbs$/, "")}.asm`;
     let filePath = openedFilePath.slice(0, openedFilePath.lastIndexOf("\\") + 1);
     filePath += fileName;
@@ -119,6 +120,14 @@ ipcMain.on("execute-code", (_, { statements, title }) => {
             handleError(error.message); 
         }
     });
+    // Mars execution
+    try{
+        const output = await runMars(filePath);
+        console.log("output", output);
+        mainWindow.webContents.send("mars-output", String(output));
+    }catch(error){
+        console.log(error)
+    }
 })
 
 ipcMain.on("close-app", (e, settingsData) => {
@@ -150,6 +159,15 @@ ipcMain.on("close-app", (e, settingsData) => {
         });
     }
 });
+
+// ipcMain.on('execute-mars', (event, asmFilePath) => {
+//     const { runMars } = require('./marsRunner');
+
+//     runMars(asmFilePath, (output) => {
+//         event.reply('mars-output', output);
+//     });
+// });
+
 
 const handleError = (message = "Sorry, something went wrong :(") => {
     new Notification({
