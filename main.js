@@ -94,6 +94,7 @@ ipcMain.on("start-parser", async (_, fileContent) => {
     const parser = new RobasParser(mainWindow);
     let output;
     const lines = fileContent.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    let isError = false;
     
     try {
         await parser.parse(lines);
@@ -101,9 +102,10 @@ ipcMain.on("start-parser", async (_, fileContent) => {
     }
     catch (e) {
         output = `Parsing failed: ${e.message}`;
+        isError = true;
     }
     
-    mainWindow.webContents.send("parser-finished", { output, statements: parser.statements });
+    mainWindow.webContents.send("parser-finished", { output, statements: parser.statements, isError });
 });
 
 ipcMain.on("execute-code", async (_, { statements, title }) => {

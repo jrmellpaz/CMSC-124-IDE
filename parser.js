@@ -400,7 +400,7 @@ class RobasParser {
 
             const conditionalRegex = /^(if|else\s*if)\s*:\s*(.*)\s*{$|^(else)\s*{$/;
             const match = line.match(conditionalRegex);
-            console.log(match);
+            console.log("MATCH", match);
 
             if (match) {
                 this._isInConditional = true;

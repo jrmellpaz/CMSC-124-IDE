@@ -244,9 +244,20 @@ window.addEventListener("DOMContentLoaded", () => {
         ipcRenderer.send("start-parser", elements.fileTextarea.value);
     }
 
-    ipcRenderer.on("parser-finished", (_, { output, statements }) => {
+    ipcRenderer.on("parser-finished", (_, { output, statements, isError }) => {
+        displayOutput(output);
+        const error = elements.errorsChip;
+
+        if (isError) {
+            error.textContent = "Has error(s)";
+            error.parentElement.style.opacity = "1";
+        }
+        else {
+            error.textContent = "0 error(s)";
+            error.parentElement.style.opacity = "0.4";
+        }
+
         if (run.execute) {
-            displayOutput(output);
             ipcRenderer.send("execute-code", { statements, title: elements.title.value });
         }
     });
@@ -268,16 +279,5 @@ window.addEventListener("DOMContentLoaded", () => {
     ipcRenderer.on('mars-output', (_, output) => {
         console.log(output);
         displayOutput(output);
-        // const outputDiv = document.getElementById('output');
-        // outputDiv.textContent = output;
     });
-    // // Output terminal
-    // ipcRenderer.on("terminal-output", (_, output) => {
-    //     displayOutput(output);
-    // });
 });
-
-// document.getElementById('Execute File').addEventListener('click', () => {
-//     const asmFilePath = 'path/to/output.asm';
-//     ipcRenderer.send('execute-mars', asmFilePath);
-// });
