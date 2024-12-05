@@ -122,6 +122,7 @@ ipcMain.on("execute-code", async (_, { statements, title }) => {
             handleError(error.message); 
         }
     });
+    
     // Mars execution
     try{
         const output = await runMars(filePath);
@@ -161,15 +162,6 @@ ipcMain.on("close-app", (e, settingsData) => {
         });
     }
 });
-
-// ipcMain.on('execute-mars', (event, asmFilePath) => {
-//     const { runMars } = require('./marsRunner');
-
-//     runMars(asmFilePath, (output) => {
-//         event.reply('mars-output', output);
-//     });
-// });
-
 
 const handleError = (message = "Sorry, something went wrong :(") => {
     new Notification({
