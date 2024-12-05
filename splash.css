@@ -14,7 +14,7 @@ body {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: var(--blue3);
+  /* background-color: var(--blue3); */
 }
 
 #splash-container {
@@ -22,13 +22,15 @@ body {
 }
 
 #splash-image {
-  width: 80%; /*Adjust the size of the splash image */
+  width: 70%; /*Adjust the size of the splash image */
   /* max-width: 500px; */
   /* margin-bottom: 1px; */
 }
 
 #loading-gif {
-  width: 75px; /* Adjust the size of the loading gif */
+  width: 40px; /* Adjust the size of the loading gif */
   height: auto;
+  position: relative;
+  top: -75px;
 }
 
