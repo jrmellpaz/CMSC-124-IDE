@@ -63,7 +63,7 @@ const createWindow = () => {
         mainWindow.center();
         mainWindow.maximize();
         mainWindow.show();
-    }, 5000);
+    }, 10000);
 
     mainWindow.webContents.on("did-finish-load", readData);
 
