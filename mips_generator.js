@@ -83,7 +83,7 @@ class MIPSGenerator {
         message = message.replace(/"/g, '\\"');
         console.log("message: ", message);
         console.log("Generated .data section: ", this.dataSection);
-        this.dataSection += `${identifier}: .asciiz "${message}"\n`;
+        this.dataSection += `${identifier}: .asciiz "${message}\\n"\n`;
 
         this.code += `la $a0, ${identifier}\n`;
         this.code += `li $v0, 4\n`;

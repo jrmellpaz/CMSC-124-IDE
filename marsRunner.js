@@ -1,7 +1,7 @@
 // marsRunner.js
 const { exec } = require('child_process');
 const path = require('path');
-const { app } =  require('electron')
+const { app } =  require('electron');
 
 function runMars(asmFilePath) {
     const marsJarPath = path.join(app.getAppPath(), 'Mars45.jar'); // Update with your MARS.jar path
