@@ -2,8 +2,7 @@
 
 <statement_list> ::= <statement> | <statement> <statement_list>
 
-<statement> ::= <variable_declaration> | <assignment> | <conditional>
-| <input_statement> | <output_statement>
+<statement> ::= <variable_declaration> | <assignment> | <conditional> | <input_statement> | <output_statement>
 
 <variable_declaration> ::= "var" <data_type> <identifier> "=" <expression> ";"
 
@@ -27,8 +26,7 @@
 
 <identifier> ::= [a-zA-Z\_][a-zA-Z0-9_]\* // Identifiers start with a letter or underscore
 
-<literal> ::= <int_literal> | <float_literal> | <string_literal>
-| <bool_literal>
+<literal> ::= <int_literal> | <float_literal> | <string_literal> | <bool_literal>
 
 <int_literal> ::= [0-9]+
 <float_literal> ::= [0-9]+"."[0-9]+
