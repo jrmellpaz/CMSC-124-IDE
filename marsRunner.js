@@ -4,7 +4,7 @@ const path = require('path');
 const { app } =  require('electron');
 
 function runMars(asmFilePath) {
-    const marsJarPath = path.join(app.getAppPath(), 'Mars45.jar'); // Update with your MARS.jar path
+    const marsJarPath = path.join(app.getAppPath(), 'Mars4_5.jar'); // Update with your MARS.jar path
     const command = `java -jar ${marsJarPath} nc ${asmFilePath}`;
 
     return new Promise((resolve, reject) => {

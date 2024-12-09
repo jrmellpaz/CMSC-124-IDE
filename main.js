@@ -36,6 +36,7 @@ const createWindow = () => {
         webPreferences: {
             preload: path.join(app.getAppPath(), "renderer.js"),
             nodeIntegration: true,
+            devTools: false
             // contextIsolation: true
         },
         icon: "assets/icon.png",
@@ -63,7 +64,7 @@ const createWindow = () => {
         mainWindow.center();
         mainWindow.maximize();
         mainWindow.show();
-    }, 10000);
+    }, 5000);
 
     mainWindow.webContents.on("did-finish-load", readData);
 
