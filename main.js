@@ -6,7 +6,7 @@ const MIPSGenerator = require("./mips_generator.js");
 const { runMars } = require("./marsRunner");
 
 // Electron reloader
-require("electron-reloader")(module);
+// require("electron-reloader")(module);
 
 let mainWindow;
 let openedFilePath="";
